@@ -12,6 +12,10 @@
 
 ---
 
+Note: This is an early WIP release to reserve the name and set up metadata. Not ready for production use yet.
+
+---
+
 ## 📸 Demo
 
 ```bash
@@ -54,7 +58,7 @@ Flags: SSE, SSE2, AVX2, FMA, …
 Install cpufetch‑rs directly with Cargo:
 
 ```bash
-cargo install cpufetch‑rs
+cargo install cpufetch
 ```
 
 ### 🛠️ From Source
@@ -65,7 +69,7 @@ Clone the repository and build it:
 git clone https://github.com/sm-moshi/cpufetch‑rs.git
 cd cpufetch‑rs
 cargo build --release
-./target/release/cpufetch‑rs
+./target/release/cpufetch
 ```
 
 ---

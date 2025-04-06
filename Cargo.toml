@@ -1,12 +1,15 @@
 [package]
-name        = "cpufetch-rs"
-version     = "0.0.1"
-edition     = "2021"
-description = "A blazing-fast, modern, and elegant Rust rewrite of cpufetch!"
-repository  = "https://github.com/sm-moshi/cpufetch-rs"
-license     = "MIT OR Apache-2.0"
-keywords    = ["cpu", "fetch", "cpufetch", "rust", "rs", "cpufetch-rs"]
-categories  = ["command-line-utilities", "system-tools"]
+name          = "cpufetch"
+version       = "0.0.1"
+edition       = "2024"
+license       = "MIT OR Apache-2.0"
+description   = "A blazing-fast, modern, and elegant Rust rewrite of cpufetch!"
+readme        = "README.md"
+repository    = "https://github.com/sm-moshi/cpufetch-rs"
+documentation = "https://docs.rs/cpufetch-rs"
+keywords      = ["cpu", "fetch", "cpufetch", "rust", "rs", "cpufetch-rs"]
+categories    = ["command-line-utilities", "system-tools"]
+exclude       = ["docs/", "target/", ".github/", ".vscode/"]
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

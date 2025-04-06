@@ -7,9 +7,7 @@ newline_style        = "Unix"
 use_small_heuristics = "Default"
 
 # Import formatting
-reorder_imports     = true
-imports_granularity = "Module"
-group_imports       = "StdExternalCrate"
+reorder_imports = true
 
 # Code organization
 reorder_modules            = true
@@ -17,9 +15,3 @@ match_block_trailing_comma = true
 use_field_init_shorthand   = true
 use_try_shorthand          = true
 merge_derives              = true
-
-# Additional formatting
-format_strings        = true
-format_macro_matchers = true
-format_macro_bodies   = true
-normalize_comments    = true
