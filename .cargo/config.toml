@@ -1,0 +1,36 @@
+[env]
+LLVM_PROFILE_FILE = "coverage/default_%p_%m.profraw"
+
+[target.'cfg(unix)']
+rustflags = ["-C", "instrument-coverage=all", "-C", "link-dead-code"]
+
+[llvm-cov]
+output-dir  = "coverage"
+output-path = "coverage/lcov.info"
+
+[target.'cfg(all())']
+rustflags = [
+    # Enable additional clippy lints
+    "-Wclippy::all",
+    "-Wclippy::pedantic",
+    "-Aclippy::module_name_repetitions",
+    "-Aclippy::too_many_lines",
+    # Add more lint configurations as needed
+]
+
+[profile.release]
+lto           = "thin"
+codegen-units = 1
+opt-level     = 3
+debug         = false
+strip         = "symbols"
+
+[profile.dev]
+opt-level = 1
+debug     = true
+
+[build]
+rustflags = ["--cfg", "feature=\"testing\""]
+
+[target.'cfg(test)']
+rustflags = ["--cfg", "feature=\"testing\""]
