@@ -1,0 +1,54 @@
+[package]
+name        = "cpufetch-rs"
+version     = "0.0.1"
+edition     = "2021"
+description = "A blazing-fast, modern, and elegant Rust rewrite of cpufetch!"
+repository  = "https://github.com/sm-moshi/cpufetch-rs"
+license     = "MIT OR Apache-2.0"
+keywords    = ["cpu", "fetch", "cpufetch", "rust", "rs", "cpufetch-rs"]
+categories  = ["command-line-utilities", "system-tools"]
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+libc       = "0.2.171"
+sysinfo    = "0.34.2"
+sys-info   = "0.9.0"
+raw-cpuid  = "11.5.0"
+platforms  = "3.5.0"
+once_cell  = "1.21.3"
+clap       = { version = "4.5.35", features = ["derive"] }
+colored    = "3.0.0"
+regex      = "1.11.1"
+serde      = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+toml       = "0.8.20"
+crossterm  = "0.29.0"
+textwrap   = "0.16.2"
+termcolor  = "1.4.1"
+thiserror  = "2.0.12"
+anyhow     = "1.0.97"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+procfs = "0.17.0"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows         = { version = "0.61.1", features = ["Win32_System_SystemInformation"] }
+wmi             = "0.15.1"
+windows-version = "0.1.4"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+sysctl = "0.6.0"
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"
+assert_cmd        = "2.0.16"
+serial_test       = "3.2.0"
+predicates        = "3.1.3"
+
+[build-dependencies]
+cc = "1.2.18"
+
+[features]
+default = []
