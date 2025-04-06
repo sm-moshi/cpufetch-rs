@@ -23,3 +23,9 @@ target/
 
 # Local History for Visual Studio Code
 .history/
+
+# Local files
+memory-bank/
+.cursor/
+cpufetch-rs.code-workspace
+.cursorignore
