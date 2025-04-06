@@ -18,23 +18,24 @@ pub enum CpuError {
     UnsupportedArch,
 }
 
-/// Represents known CPU vendors with proper serialization support
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+/// CPU vendor identification
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Vendor {
-    AMD,
     Intel,
+    AMD,
     ARM,
-    #[serde(other)]
-    Unknown(String),
+    Apple,
+    Unknown,
 }
 
 impl fmt::Display for Vendor {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Vendor::AMD => write!(f, "AMD"),
             Vendor::Intel => write!(f, "Intel"),
+            Vendor::AMD => write!(f, "AMD"),
             Vendor::ARM => write!(f, "ARM"),
-            Vendor::Unknown(s) => write!(f, "{s}"),
+            Vendor::Apple => write!(f, "Apple"),
+            Vendor::Unknown => write!(f, "Unknown"),
         }
     }
 }
@@ -98,6 +99,11 @@ pub struct CpuInfo {
     pub frequency: Frequency,
     /// Cache sizes in KB (L1i, L1d, L2, L3)
     pub cache_sizes: [Option<u32>; 4],
+    /// CPU features
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    pub features: crate::cpu::X86Features,
+    #[cfg(target_arch = "aarch64")]
+    pub features: crate::cpu::ArmFeatures,
 }
 
 impl CpuInfo {
@@ -112,11 +118,7 @@ impl CpuInfo {
         {
             crate::arch::aarch64::detect_cpu()
         }
-        #[cfg(not(any(
-            target_arch = "x86",
-            target_arch = "x86_64",
-            target_arch = "aarch64"
-        )))]
+        #[cfg(not(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")))]
         {
             Err(CpuError::UnsupportedArch)
         }
@@ -128,9 +130,7 @@ impl CpuInfo {
     /// the CPU multiple times during program execution.
     pub fn get() -> &'static Self {
         static CPU_INFO: once_cell::sync::Lazy<CpuInfo> =
-            once_cell::sync::Lazy::new(|| {
-                Self::new().expect("Failed to detect CPU information")
-            });
+            once_cell::sync::Lazy::new(|| CpuInfo::new().expect("Failed to detect CPU information"));
         &CPU_INFO
     }
 }
@@ -138,13 +138,17 @@ impl CpuInfo {
 impl Default for CpuInfo {
     fn default() -> Self {
         Self {
-            vendor: Vendor::Unknown("Unknown".to_string()),
+            vendor: Vendor::Unknown,
             brand_string: String::new(),
             version: Version::default(),
             physical_cores: 0,
             logical_cores: 0,
             frequency: Frequency::default(),
             cache_sizes: [None; 4],
+            #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+            features: crate::cpu::X86Features::empty(),
+            #[cfg(target_arch = "aarch64")]
+            features: crate::cpu::ArmFeatures::empty(),
         }
     }
 }
@@ -158,16 +162,13 @@ mod tests {
         assert_eq!(Vendor::AMD.to_string(), "AMD");
         assert_eq!(Vendor::Intel.to_string(), "Intel");
         assert_eq!(Vendor::ARM.to_string(), "ARM");
-        assert_eq!(
-            Vendor::Unknown("Test".to_string()).to_string(),
-            "Test"
-        );
+        assert_eq!(Vendor::Unknown.to_string(), "Unknown");
     }
 
     #[test]
     fn test_cpu_info_default() {
         let info = CpuInfo::default();
-        assert_eq!(info.vendor, Vendor::Unknown("Unknown".to_string()));
+        assert_eq!(info.vendor, Vendor::Unknown);
         assert_eq!(info.physical_cores, 0);
         assert_eq!(info.logical_cores, 0);
         assert_eq!(info.cache_sizes, [None; 4]);
