@@ -17,7 +17,7 @@ pub struct Args {
     pub cache: bool,
 
     /// Show CPU feature flags
-    #[clap(short, long)]
+    #[clap(short = 'F', long)]
     pub features: bool,
 
     /// Output in JSON format instead of ASCII art

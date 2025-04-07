@@ -7,7 +7,7 @@ use crate::Error;
 use std::fmt;
 
 /// CPU frequency information
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct Frequency {
     /// Base frequency in MHz
     pub base: Option<f64>,
@@ -15,16 +15,6 @@ pub struct Frequency {
     pub current: Option<f64>,
     /// Maximum frequency in MHz (Turbo/Boost)
     pub max: Option<f64>,
-}
-
-impl Default for Frequency {
-    fn default() -> Self {
-        Self {
-            base: None,
-            current: None,
-            max: None,
-        }
-    }
 }
 
 impl fmt::Display for Frequency {
@@ -138,27 +128,61 @@ fn detect_frequency_linux() -> Result<Frequency, Error> {
 #[cfg(all(feature = "frequency", target_os = "windows"))]
 fn detect_frequency_windows() -> Result<Frequency, Error> {
     use sysinfo::{CpuRefreshKind, System};
-    use windows::Win32::System::SystemInformation;
+    use wmi::{COMLibrary, WMIConnection};
+    use serde::Deserialize;
+
+    // Define a structure that matches Win32_Processor WMI class
+    #[derive(Deserialize, Debug)]
+    struct Win32_Processor {
+        CurrentClockSpeed: Option<u32>,
+        MaxClockSpeed: Option<u32>,
+    }
 
     let mut frequency = Frequency::default();
 
-    // Try Windows API for base frequency
-    unsafe {
-        let processor_info = SystemInformation::GetSystemInfo();
-        if let Some(processor_freq) = processor_info.dwProcessorType.try_into().ok() {
-            frequency.base = Some(processor_freq as f64);
+    // Try WMI access first for most accurate data
+    match COMLibrary::new() {
+        Ok(com_lib) => {
+            if let Ok(wmi_con) = WMIConnection::new(com_lib) {
+                // Query WMI for processor information
+                if let Ok(processors) = wmi_con.query::<Win32_Processor>() {
+                    if let Some(processor) = processors.first() {
+                        // Current frequency
+                        if let Some(current_speed) = processor.CurrentClockSpeed {
+                            frequency.current = Some(current_speed as f64);
+                        }
+
+                        // Max frequency
+                        if let Some(max_speed) = processor.MaxClockSpeed {
+                            frequency.max = Some(max_speed as f64);
+
+                            // If max is available but base isn't, estimate base as 80% of max
+                            // This is a common rule of thumb for modern processors
+                            if frequency.base.is_none() {
+                                frequency.base = Some(max_speed as f64 * 0.8);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            // Log the error but continue with fallback
+            eprintln!("Failed to initialize COM library for WMI: {}", e);
         }
     }
 
-    // Use sysinfo for current frequency
-    let mut system = System::new();
-    system.refresh_cpu_specifics(CpuRefreshKind::everything());
+    // Use sysinfo as a fallback if WMI failed to provide frequency information
+    if frequency.current.is_none() {
+        let mut system = System::new();
+        system.refresh_cpu_specifics(CpuRefreshKind::everything());
 
-    if let Some(cpu) = system.cpus().first() {
-        frequency.current = Some(cpu.frequency() as f64);
+        if let Some(cpu) = system.cpus().first() {
+            frequency.current = Some(cpu.frequency() as f64);
+        }
     }
 
-    // Fallback to sysinfo if we couldn't get frequencies
+    // Fallback to generic method if we couldn't get any frequencies
     if frequency.current.is_none() && frequency.max.is_none() && frequency.base.is_none() {
         return detect_frequency_generic();
     }

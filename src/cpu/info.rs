@@ -41,7 +41,7 @@ impl fmt::Display for Vendor {
 }
 
 /// CPU frequency information in MHz
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct Frequency {
     /// Base/nominal frequency
     pub base: Option<f64>,
@@ -49,16 +49,6 @@ pub struct Frequency {
     pub max: Option<f64>,
     /// Current operating frequency
     pub current: Option<f64>,
-}
-
-impl Default for Frequency {
-    fn default() -> Self {
-        Self {
-            base: None,
-            current: None,
-            max: None,
-        }
-    }
 }
 
 impl fmt::Display for Frequency {
