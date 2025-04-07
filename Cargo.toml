@@ -1,5 +1,5 @@
 [package]
-name          = "cpufetch"
+name          = "cpufetch-rs"
 version       = "0.0.1"
 edition       = "2024"
 license       = "MIT OR Apache-2.0"
@@ -11,8 +11,12 @@ keywords      = ["cpu", "fetch", "cpufetch", "rust", "rs", "cpufetch-rs"]
 categories    = ["command-line-utilities", "system-tools"]
 exclude       = ["docs/", "target/", ".github/", ".vscode/"]
 
+[[bin]]
+name = "cpufetch"
+path = "src/main.rs"
+
 [dependencies]
-libc       = "0.2.171"
+libc       = "1.0.0-alpha.1"
 sysinfo    = "0.34.2"
 sys-info   = "0.9.0"
 raw-cpuid  = "11.5.0"
