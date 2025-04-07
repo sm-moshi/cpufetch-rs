@@ -98,6 +98,6 @@ fn test_cpu_info_cache_detection() {
     println!("Non-x86 architecture detected: cache detection not yet implemented");
     println!("Detected cache sizes: {:?}", info.cache_sizes);
 
-    // Test passes on non-x86 architectures without cache detection
-    assert!(true, "Cache detection test succeeded on non-x86 architecture");
+    // Replace the assertion with a simple comment or debug print
+    println!("Cache detection test succeeded on non-x86 architecture");
 }

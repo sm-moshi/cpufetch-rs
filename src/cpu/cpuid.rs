@@ -118,6 +118,20 @@ pub struct CpuidWrapper {
     cpuid: CpuId,
 }
 
+#[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+impl Default for CpuidWrapper {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+impl Default for CpuidWrapper<raw_cpuid::CpuIdReaderNative> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CpuidWrapper {
     /// Create a new CpuidWrapper instance
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
