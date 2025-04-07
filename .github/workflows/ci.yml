@@ -4,6 +4,7 @@ on:
     push:
         branches:
             - main
+            - develop
     pull_request:
 
 jobs:
@@ -17,7 +18,7 @@ jobs:
               uses: dtolnay/rust-toolchain@stable
             - uses: Swatinem/rust-cache@v2
             - name: Run tests
-              run: cargo test --all-features --workspace
+              run: cargo +beta test --all-features --workspace
 
     rustfmt:
         name: Rustfmt
@@ -31,7 +32,7 @@ jobs:
                   components: rustfmt
             - uses: Swatinem/rust-cache@v2
             - name: Check formatting
-              run: cargo +nightlyfmt --all --check
+              run: cargo +nightly fmt --all --check
 
     clippy:
         name: Clippy
@@ -54,9 +55,9 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
             - name: Install Rust toolchain
-              uses: dtolnay/rust-toolchain@beta
+              uses: dtolnay/rust-toolchain@stable
             - uses: Swatinem/rust-cache@v2
             - name: Check documentation
               env:
                   RUSTDOCFLAGS: -D warnings
-              run: cargo +betadoc --no-deps --document-private-items --all-features --workspace --examples
+              run: cargo +stable doc --no-deps --document-private-items --all-features --workspace --examples
