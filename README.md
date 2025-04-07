@@ -47,7 +47,11 @@ Flags: SSE, SSE2, AVX2, FMA, …
   Works on Linux, macOS, and Windows (where supported) without external C dependencies.
 
 - **Modern Rust Implementation**
-  Leverages Rust’s safety, performance, and modularity to ensure reliable, maintainable code.
+  Leverages Rust's safety, performance, and modularity to ensure reliable, maintainable code.
+
+- **Feature Detection**: Dynamic CPU feature detection for:
+  - x86_64: SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, FMA, BMI1, BMI2, etc.
+  - ARM64: NEON, AES, PMULL, SHA1, SHA2, CRC32, ATOMICS, etc.
 
 ---
 
@@ -148,4 +152,4 @@ Support the development of cpufetch‑rs on [GitHub Sponsors](https://github.com
 
 ---
 
-*cpufetch‑rs is a labor of love aimed at delivering the best possible terminal experience for CPU information in Rust. Thank you for your interest and support!*
+*cpufetch‑rs is a labour of love aimed at delivering the best possible terminal experience for CPU information in Rust. Thank you for your interest and support!*

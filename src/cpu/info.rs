@@ -41,7 +41,7 @@ impl fmt::Display for Vendor {
 }
 
 /// CPU frequency information in MHz
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct Frequency {
     /// Base/nominal frequency
     pub base: Option<u32>,
@@ -51,18 +51,8 @@ pub struct Frequency {
     pub current: Option<u32>,
 }
 
-impl Default for Frequency {
-    fn default() -> Self {
-        Self {
-            base: None,
-            max: None,
-            current: None,
-        }
-    }
-}
-
 /// Represents version information for a CPU
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct Version {
     /// CPU family identifier
     pub family: u8,
@@ -70,16 +60,6 @@ pub struct Version {
     pub model: u8,
     /// CPU stepping identifier
     pub stepping: u8,
-}
-
-impl Default for Version {
-    fn default() -> Self {
-        Self {
-            family: 0,
-            model: 0,
-            stepping: 0,
-        }
-    }
 }
 
 /// Core CPU information structure
@@ -109,16 +89,15 @@ pub struct CpuInfo {
 impl CpuInfo {
     /// Creates a new CpuInfo instance by detecting the current CPU
     pub fn new() -> Result<Self, CpuError> {
-        // This will be implemented in the architecture-specific modules
-        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+        #[cfg(target_arch = "x86_64")]
         {
-            crate::arch::x86::detect_cpu()
+            crate::arch::x86_64::detect_cpu()
         }
         #[cfg(target_arch = "aarch64")]
         {
             crate::arch::aarch64::detect_cpu()
         }
-        #[cfg(not(any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64")))]
+        #[cfg(not(any(target_arch = "x86_64", target_arch = "aarch64")))]
         {
             Err(CpuError::UnsupportedArch)
         }
@@ -130,7 +109,9 @@ impl CpuInfo {
     /// the CPU multiple times during program execution.
     pub fn get() -> &'static Self {
         static CPU_INFO: once_cell::sync::Lazy<CpuInfo> =
-            once_cell::sync::Lazy::new(|| CpuInfo::new().expect("Failed to detect CPU information"));
+            once_cell::sync::Lazy::new(|| {
+                CpuInfo::new().expect("Failed to detect CPU information")
+            });
         &CPU_INFO
     }
 }
@@ -159,8 +140,8 @@ mod tests {
 
     #[test]
     fn test_vendor_display() {
-        assert_eq!(Vendor::AMD.to_string(), "AMD");
         assert_eq!(Vendor::Intel.to_string(), "Intel");
+        assert_eq!(Vendor::AMD.to_string(), "AMD");
         assert_eq!(Vendor::ARM.to_string(), "ARM");
         assert_eq!(Vendor::Unknown.to_string(), "Unknown");
     }
