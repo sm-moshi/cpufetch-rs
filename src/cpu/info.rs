@@ -109,9 +109,7 @@ impl CpuInfo {
     /// the CPU multiple times during program execution.
     pub fn get() -> &'static Self {
         static CPU_INFO: once_cell::sync::Lazy<CpuInfo> =
-            once_cell::sync::Lazy::new(|| {
-                CpuInfo::new().expect("Failed to detect CPU information")
-            });
+            once_cell::sync::Lazy::new(|| CpuInfo::new().expect("Failed to detect CPU information"));
         &CPU_INFO
     }
 }
