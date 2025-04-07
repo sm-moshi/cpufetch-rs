@@ -2,7 +2,8 @@
 //!
 //! This module provides functionality for detecting CPU information on ARM64 systems.
 
-use crate::cpu::{ArmFeatures, CpuError, CpuInfo, Frequency, Vendor, Version};
+use crate::cpu::info::Frequency;
+use crate::cpu::{ArmFeatures, CpuError, CpuInfo, Vendor, Version};
 
 /// Detect CPU information for ARM64 systems
 pub fn detect_cpu() -> Result<CpuInfo, CpuError> {

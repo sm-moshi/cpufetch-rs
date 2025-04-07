@@ -41,14 +41,40 @@ impl fmt::Display for Vendor {
 }
 
 /// CPU frequency information in MHz
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Frequency {
     /// Base/nominal frequency
-    pub base: Option<u32>,
+    pub base: Option<f64>,
     /// Maximum turbo frequency
-    pub max: Option<u32>,
+    pub max: Option<f64>,
     /// Current operating frequency
-    pub current: Option<u32>,
+    pub current: Option<f64>,
+}
+
+impl Default for Frequency {
+    fn default() -> Self {
+        Self {
+            base: None,
+            current: None,
+            max: None,
+        }
+    }
+}
+
+impl fmt::Display for Frequency {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let base = self
+            .base
+            .map_or_else(|| "Unknown".to_string(), |v| format!("{:.2} MHz", v));
+        let current = self
+            .current
+            .map_or_else(|| "Unknown".to_string(), |v| format!("{:.2} MHz", v));
+        let max = self
+            .max
+            .map_or_else(|| "Unknown".to_string(), |v| format!("{:.2} MHz", v));
+
+        write!(f, "Base: {}, Current: {}, Max: {}", base, current, max)
+    }
 }
 
 /// Represents version information for a CPU

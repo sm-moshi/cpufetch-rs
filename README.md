@@ -12,7 +12,7 @@
 
 ---
 
-Note: This is an early WIP release to reserve the name and set up metadata. Not ready for production use yet.
+Note: This is an early development version - core CPU detection is functional but display formatting is still in progress.
 
 ---
 
@@ -40,11 +40,8 @@ Flags: SSE, SSE2, AVX2, FMA, …
 - **Extensive Feature Flag Support**
   Accurately parses and lists supported instruction sets such as SSE, AVX, FMA, and more.
 
-- **Elegant ASCII Art & Layout**
-  Presents information in a visually appealing, terminal‑friendly format with vendor‑specific logos.
-
-- **Cross‑Platform Compatibility**
-  Works on Linux, macOS, and Windows (where supported) without external C dependencies.
+- **Cross‑Platform Architecture Support**
+  Works on both ARM (Apple Silicon) and x86_64 architectures with graceful fallbacks.
 
 - **Modern Rust Implementation**
   Leverages Rust's safety, performance, and modularity to ensure reliable, maintainable code.
@@ -52,6 +49,9 @@ Flags: SSE, SSE2, AVX2, FMA, …
 - **Feature Detection**: Dynamic CPU feature detection for:
   - x86_64: SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, FMA, BMI1, BMI2, etc.
   - ARM64: NEON, AES, PMULL, SHA1, SHA2, CRC32, ATOMICS, etc.
+
+- **Cache Topology Detection**
+  Identifies and displays detailed cache hierarchy information (L1i, L1d, L2, L3) when available.
 
 ---
 
@@ -62,7 +62,7 @@ Flags: SSE, SSE2, AVX2, FMA, …
 Install cpufetch‑rs directly with Cargo:
 
 ```bash
-cargo install cpufetch
+cargo install cpufetch-rs
 ```
 
 ### 🛠️ From Source
@@ -86,32 +86,32 @@ Run the full test suite with:
 cargo test
 ```
 
-Our tests include unit tests for CPUID parsing, architecture detection, layout formatting, and full integration tests that simulate complete CLI execution.
+To test on a specific architecture:
+
+```bash
+cargo test --target aarch64-apple-darwin  # For Apple Silicon
+cargo test --target x86_64-unknown-linux-gnu  # For x86_64
+```
+
+Our tests include unit tests for CPUID parsing, architecture detection, feature flag support, and proper cross-platform behavior.
 
 ---
 
-## 🗺️ Roadmap
+## 🗺️ Project Status
 
-The project is organized into several key phases to achieve full feature parity with the original cpufetch:
+Current development progress:
 
-1. **Project Setup & Core Scaffold**
-   Establish a robust Rust project structure with CI, core modules, and error handling.
-2. **CPU Information Module**
-   Develop modules to parse CPUID data, extract feature flags, and measure CPU frequencies.
-3. **Architecture Detection**
-   Implement platform‑specific detection (x86_64, AArch64) and unify it under a common API.
-4. **ASCII Art & Printer Module**
-   Design the terminal output engine, including dynamic logo selection and layout formatting.
-5. **CLI Interface**
-   Build a comprehensive CLI using clap to support options like `--logo-only`, `--no-logo`, `--ascii`, and `--json`.
-6. **Utility Functions & Integration**
-   Create shared helpers for formatting and system inquiries; integrate all modules in `main.rs`.
-7. **Documentation & Testing**
-   Finalize the manpage, README, and comprehensive tests to ensure full feature parity.
-8. **Packaging & Distribution**
-   Prepare binaries for multiple platforms and publish to Crates.io.
+- ✅ Core CPU information structures
+- ✅ CPUID parsing module with architecture-specific gates
+- ✅ Feature flag detection for both x86_64 and ARM
+- ✅ Cache topology detection for x86_64 processors
+- ✅ Cross-platform architecture detection
+- ✅ ARM and x86_64 specific implementations
+- 🔄 Frequency detection (in progress)
+- 🔄 Display formatting (coming soon)
+- 🔄 CLI interface (coming soon)
 
-For a more detailed plan, refer to our [ROADMAP.md](docs/ROADMAP.md) and [TODO.md](docs/TODO.md).
+For a detailed roadmap, refer to our [ROADMAP.md](docs/ROADMAP.md) and [TODO.md](docs/TODO.md).
 
 ---
 
@@ -122,6 +122,7 @@ We welcome contributions to cpufetch‑rs! Before submitting issues or pull requ
 - Follow the code style and formatting guidelines (use `cargo fmt` and `cargo clippy`).
 - Write tests for any new features or bug fixes.
 - Ensure CI passes on all supported platforms.
+- Follow the Gitflow workflow described in our project docs.
 
 Read our [CONTRIBUTING.md](docs/CONTRIBUTING.md) for full details.
 
