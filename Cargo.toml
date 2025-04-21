@@ -41,7 +41,7 @@ procfs = "0.17.0"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows         = { version = "0.61.1", features = ["Win32_System_SystemInformation"] }
-wmi             = "0.16.0"
+wmi             = "0.17.0"
 windows-version = "0.1.4"
 
 [target.'cfg(target_os = "macos")'.dependencies]
