@@ -34,7 +34,7 @@ termcolor  = "1.4.1"
 thiserror  = "2.0.12"
 anyhow     = "1.0.98"
 bitflags   = { version = "2.9.0", features = ["serde"] }
-num_cpus   = "1.16.0"
+num_cpus   = "1.17.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 procfs = "0.17.0"
