@@ -20,6 +20,7 @@ on:
     - cron: '0 0 * * 1,4'
   push:
     branches: [ "main", "develop" ]
+  workflow_dispatch:
 
 permissions:
   # Require writing security events to upload SARIF file to security tab
