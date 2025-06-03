@@ -1,5 +1,8 @@
 name: CI # Continuous Integration
 
+permissions:
+    contents: read
+
 on:
     push:
         branches:
