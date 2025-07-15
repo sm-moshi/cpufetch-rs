@@ -17,7 +17,7 @@ path = "src/main.rs"
 
 [dependencies]
 libc       = "1.0.0-alpha.1"
-sysinfo    = "0.35.2"
+sysinfo    = "0.36.0"
 sys-info   = "0.9.0"
 raw-cpuid  = "11.5.0"
 platforms  = "3.6.0"
