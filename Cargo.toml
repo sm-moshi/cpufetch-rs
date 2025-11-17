@@ -27,7 +27,7 @@ colored    = "3.0.0"
 regex      = "1.12.2"
 serde      = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.145"
-toml       = "0.9.5"
+toml       = "0.9.8"
 crossterm  = "0.29.0"
 textwrap   = "0.16.2"
 termcolor  = "1.4.1"
