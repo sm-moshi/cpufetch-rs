@@ -13,13 +13,13 @@ name: OSV-Scanner
 
 on:
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: [ "main" ]
   merge_group:
-    branches: [ "main", "develop" ]
+    branches: [ "main" ]
   schedule:
     - cron: '0 0 * * 1,4'
   push:
-    branches: [ "main", "develop" ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
