@@ -16,7 +16,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
             - name: Install Rust toolchain
               uses: dtolnay/rust-toolchain@stable
             - uses: Swatinem/rust-cache@v2
@@ -28,7 +28,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
             - name: Install Rust toolchain
               uses: dtolnay/rust-toolchain@nightly
               with:
@@ -42,7 +42,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
             - name: Install Rust toolchain
               uses: dtolnay/rust-toolchain@beta
               with:
@@ -56,7 +56,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
             - name: Install Rust toolchain
               uses: dtolnay/rust-toolchain@stable
             - uses: Swatinem/rust-cache@v2
