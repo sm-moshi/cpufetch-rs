@@ -67,10 +67,9 @@ The crate is split into a library (`lib.rs`) and a binary (`main.rs`). The binar
 
 ## Git Workflow
 
-Uses **Gitflow**: `main` (production) + `develop` (integration). Feature branches from `develop`, releases via `release/*`, hotfixes via `hotfix/*`.
+Trunk-based: `main` is the sole branch. Feature work via short-lived branches + PRs.
 
 - Commit format: `🦀 type(scope): description` (emoji prefix required)
-- Never commit directly to `main` or `develop`
 
 ## CI
 
