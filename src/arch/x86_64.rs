@@ -28,16 +28,16 @@ pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
     };
 
     // Family/model/stepping with extended IDs folded in (Intel SDM Vol. 2A §3.2)
-    // Shift is intentionally truncating: extended IDs are 4-bit fields, shift by 4 stays in u8 range.
+    // Arithmetic is performed in u16 then truncated to u8, preventing overflow in debug mode.
     #[allow(clippy::cast_possible_truncation)]
     let version = Version {
         family: if basic_info.family == 0xF {
-            (u16::from(basic_info.extended_family) << 4) as u8 + basic_info.family
+            ((u16::from(basic_info.extended_family) << 4) + u16::from(basic_info.family)) as u8
         } else {
             basic_info.family
         },
         model: if basic_info.family == 0xF || basic_info.family == 0x6 {
-            (u16::from(basic_info.extended_model) << 4) as u8 + basic_info.model
+            ((u16::from(basic_info.extended_model) << 4) + u16::from(basic_info.model)) as u8
         } else {
             basic_info.model
         },

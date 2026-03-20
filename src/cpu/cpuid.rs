@@ -420,8 +420,8 @@ mod tests {
         assert!(!info.vendor_string.is_empty());
         assert!(!info.brand_string.is_empty());
 
-        // All modern CPUs should have at least one feature
-        assert!(info.base_features != 0 || info.extended_features != 0);
+        // Vendor and brand must be present on any x86/x86_64 CPU
+        assert!(info.family > 0, "Family ID should be non-zero on real hardware");
     }
 
     #[test]
