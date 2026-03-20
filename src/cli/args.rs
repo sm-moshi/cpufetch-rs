@@ -1,4 +1,3 @@
-
 use clap::Parser;
 /// cpufetch - A fast, modern CPU detection tool
 #[derive(Parser, Debug, Default)]

@@ -125,7 +125,11 @@ mod arm_tests {
 
         // Test Apple Silicon printing
         let result = printer::print_cpu_info(&cpu_info, &args);
-        assert!(result.is_ok(), "print_cpu_info failed for Apple Silicon: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "print_cpu_info failed for Apple Silicon: {:?}",
+            result.err()
+        );
     }
 
     #[test]
@@ -143,7 +147,11 @@ mod arm_tests {
 
         // Test Apple Silicon JSON output
         let result = printer::print_json(&cpu_info);
-        assert!(result.is_ok(), "print_json failed for Apple Silicon: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "print_json failed for Apple Silicon: {:?}",
+            result.err()
+        );
     }
 
     #[test]
@@ -152,15 +160,27 @@ mod arm_tests {
         // This is more of a unit test for the ARM features
 
         let features = ArmFeatures::empty();
-        assert!(!features.contains(ArmFeatures::NEON), "Empty features should not contain NEON");
+        assert!(
+            !features.contains(ArmFeatures::NEON),
+            "Empty features should not contain NEON"
+        );
 
         let mut features = ArmFeatures::empty();
         features.insert(ArmFeatures::NEON);
-        assert!(features.contains(ArmFeatures::NEON), "Features should contain NEON after insertion");
-        assert!(!features.contains(ArmFeatures::ASIMD), "Features should not contain ASIMD");
+        assert!(
+            features.contains(ArmFeatures::NEON),
+            "Features should contain NEON after insertion"
+        );
+        assert!(
+            !features.contains(ArmFeatures::ASIMD),
+            "Features should not contain ASIMD"
+        );
 
         features.insert(ArmFeatures::ASIMD);
-        assert!(features.contains(ArmFeatures::ASIMD), "Features should contain ASIMD after insertion");
+        assert!(
+            features.contains(ArmFeatures::ASIMD),
+            "Features should contain ASIMD after insertion"
+        );
     }
 
     // This test would require actual hardware or mocking of system calls

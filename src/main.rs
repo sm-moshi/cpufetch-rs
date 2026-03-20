@@ -1,10 +1,15 @@
 fn main() {
-    println!("Hello, world!");
+    #[cfg(feature = "cli")]
+    if let Err(e) = run() {
+        eprintln!("Error: {e}");
+        std::process::exit(1);
+    }
 }
 
 /// Main application logic
-fn run() -> Result<()> {
-    use cpufetch_rs::CpuInfo;
+#[cfg(feature = "cli")]
+fn run() -> anyhow::Result<()> {
+    use cpufetch_rs::{CpuInfo, Error};
     // Get CPU information
     let cpu_info = CpuInfo::new().map_err(Error::from)?;
 

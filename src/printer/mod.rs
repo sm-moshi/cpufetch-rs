@@ -11,11 +11,11 @@ mod layout;
 mod logo;
 
 #[cfg(feature = "display")]
-use colored::Colorize;
+use crate::cli::Args;
 #[cfg(feature = "display")]
 use crate::cpu::CpuInfo;
 #[cfg(feature = "display")]
-use crate::cli::Args;
+use colored::Colorize;
 
 /// Print CPU information in a formatted display with optional ASCII art
 #[cfg(feature = "display")]
@@ -78,25 +78,63 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
         {
             use crate::cpu::X86Features;
 
-            if cpu_info.features.contains(X86Features::SSE) { println!("- {}", "SSE".green()); }
-            if cpu_info.features.contains(X86Features::SSE2) { println!("- {}", "SSE2".green()); }
-            if cpu_info.features.contains(X86Features::SSE3) { println!("- {}", "SSE3".green()); }
-            if cpu_info.features.contains(X86Features::SSSE3) { println!("- {}", "SSSE3".green()); }
-            if cpu_info.features.contains(X86Features::SSE4_1) { println!("- {}", "SSE4.1".green()); }
-            if cpu_info.features.contains(X86Features::SSE4_2) { println!("- {}", "SSE4.2".green()); }
-            if cpu_info.features.contains(X86Features::AVX) { println!("- {}", "AVX".green()); }
-            if cpu_info.features.contains(X86Features::AVX2) { println!("- {}", "AVX2".green()); }
-            if cpu_info.features.contains(X86Features::FMA) { println!("- {}", "FMA".green()); }
-            if cpu_info.features.contains(X86Features::BMI1) { println!("- {}", "BMI1".green()); }
-            if cpu_info.features.contains(X86Features::BMI2) { println!("- {}", "BMI2".green()); }
-            if cpu_info.features.contains(X86Features::F16C) { println!("- {}", "F16C".green()); }
-            if cpu_info.features.contains(X86Features::POPCNT) { println!("- {}", "POPCNT".green()); }
-            if cpu_info.features.contains(X86Features::AES) { println!("- {}", "AES".green()); }
-            if cpu_info.features.contains(X86Features::AVX512F) { println!("- {}", "AVX512F".green()); }
-            if cpu_info.features.contains(X86Features::AVX512BW) { println!("- {}", "AVX512BW".green()); }
-            if cpu_info.features.contains(X86Features::AVX512CD) { println!("- {}", "AVX512CD".green()); }
-            if cpu_info.features.contains(X86Features::AVX512DQ) { println!("- {}", "AVX512DQ".green()); }
-            if cpu_info.features.contains(X86Features::AVX512VL) { println!("- {}", "AVX512VL".green()); }
+            if cpu_info.features.contains(X86Features::SSE) {
+                println!("- {}", "SSE".green());
+            }
+            if cpu_info.features.contains(X86Features::SSE2) {
+                println!("- {}", "SSE2".green());
+            }
+            if cpu_info.features.contains(X86Features::SSE3) {
+                println!("- {}", "SSE3".green());
+            }
+            if cpu_info.features.contains(X86Features::SSSE3) {
+                println!("- {}", "SSSE3".green());
+            }
+            if cpu_info.features.contains(X86Features::SSE4_1) {
+                println!("- {}", "SSE4.1".green());
+            }
+            if cpu_info.features.contains(X86Features::SSE4_2) {
+                println!("- {}", "SSE4.2".green());
+            }
+            if cpu_info.features.contains(X86Features::AVX) {
+                println!("- {}", "AVX".green());
+            }
+            if cpu_info.features.contains(X86Features::AVX2) {
+                println!("- {}", "AVX2".green());
+            }
+            if cpu_info.features.contains(X86Features::FMA) {
+                println!("- {}", "FMA".green());
+            }
+            if cpu_info.features.contains(X86Features::BMI1) {
+                println!("- {}", "BMI1".green());
+            }
+            if cpu_info.features.contains(X86Features::BMI2) {
+                println!("- {}", "BMI2".green());
+            }
+            if cpu_info.features.contains(X86Features::F16C) {
+                println!("- {}", "F16C".green());
+            }
+            if cpu_info.features.contains(X86Features::POPCNT) {
+                println!("- {}", "POPCNT".green());
+            }
+            if cpu_info.features.contains(X86Features::AES) {
+                println!("- {}", "AES".green());
+            }
+            if cpu_info.features.contains(X86Features::AVX512F) {
+                println!("- {}", "AVX512F".green());
+            }
+            if cpu_info.features.contains(X86Features::AVX512BW) {
+                println!("- {}", "AVX512BW".green());
+            }
+            if cpu_info.features.contains(X86Features::AVX512CD) {
+                println!("- {}", "AVX512CD".green());
+            }
+            if cpu_info.features.contains(X86Features::AVX512DQ) {
+                println!("- {}", "AVX512DQ".green());
+            }
+            if cpu_info.features.contains(X86Features::AVX512VL) {
+                println!("- {}", "AVX512VL".green());
+            }
         }
 
         // Handle ARM/aarch64 features
@@ -104,19 +142,45 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
         {
             use crate::cpu::ArmFeatures;
 
-            if cpu_info.features.contains(ArmFeatures::NEON) { println!("- {}", "NEON".green()); }
-            if cpu_info.features.contains(ArmFeatures::AES) { println!("- {}", "AES".green()); }
-            if cpu_info.features.contains(ArmFeatures::PMULL) { println!("- {}", "PMULL".green()); }
-            if cpu_info.features.contains(ArmFeatures::SHA1) { println!("- {}", "SHA1".green()); }
-            if cpu_info.features.contains(ArmFeatures::SHA2) { println!("- {}", "SHA2".green()); }
-            if cpu_info.features.contains(ArmFeatures::CRC32) { println!("- {}", "CRC32".green()); }
-            if cpu_info.features.contains(ArmFeatures::ATOMICS) { println!("- {}", "ATOMICS".green()); }
-            if cpu_info.features.contains(ArmFeatures::FP) { println!("- {}", "FP".green()); }
-            if cpu_info.features.contains(ArmFeatures::ASIMD) { println!("- {}", "ASIMD".green()); }
-            if cpu_info.features.contains(ArmFeatures::FPHP) { println!("- {}", "FPHP".green()); }
-            if cpu_info.features.contains(ArmFeatures::ASIMDHP) { println!("- {}", "ASIMDHP".green()); }
-            if cpu_info.features.contains(ArmFeatures::ASIMDDP) { println!("- {}", "ASIMDDP".green()); }
-            if cpu_info.features.contains(ArmFeatures::ASIMDFHM) { println!("- {}", "ASIMDFHM".green()); }
+            if cpu_info.features.contains(ArmFeatures::NEON) {
+                println!("- {}", "NEON".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::AES) {
+                println!("- {}", "AES".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::PMULL) {
+                println!("- {}", "PMULL".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::SHA1) {
+                println!("- {}", "SHA1".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::SHA2) {
+                println!("- {}", "SHA2".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::CRC32) {
+                println!("- {}", "CRC32".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::ATOMICS) {
+                println!("- {}", "ATOMICS".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::FP) {
+                println!("- {}", "FP".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::ASIMD) {
+                println!("- {}", "ASIMD".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::FPHP) {
+                println!("- {}", "FPHP".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::ASIMDHP) {
+                println!("- {}", "ASIMDHP".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::ASIMDDP) {
+                println!("- {}", "ASIMDDP".green());
+            }
+            if cpu_info.features.contains(ArmFeatures::ASIMDFHM) {
+                println!("- {}", "ASIMDFHM".green());
+            }
         }
     }
 

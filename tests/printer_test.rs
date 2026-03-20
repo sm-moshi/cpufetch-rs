@@ -120,7 +120,11 @@ mod printer_tests {
 
         // Test without color
         let result = printer::print_cpu_info(&cpu_info, &args);
-        assert!(result.is_ok(), "print_cpu_info with no_color failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "print_cpu_info with no_color failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
@@ -135,21 +139,33 @@ mod printer_tests {
         args.cache = false;
         args.features = false;
         let result = printer::print_cpu_info(&cpu_info, &args);
-        assert!(result.is_ok(), "print_cpu_info with only frequency failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "print_cpu_info with only frequency failed: {:?}",
+            result.err()
+        );
 
         // Test with only cache information
         args.frequency = false;
         args.cache = true;
         args.features = false;
         let result = printer::print_cpu_info(&cpu_info, &args);
-        assert!(result.is_ok(), "print_cpu_info with only cache failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "print_cpu_info with only cache failed: {:?}",
+            result.err()
+        );
 
         // Test with only feature information
         args.frequency = false;
         args.cache = false;
         args.features = true;
         let result = printer::print_cpu_info(&cpu_info, &args);
-        assert!(result.is_ok(), "print_cpu_info with only features failed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "print_cpu_info with only features failed: {:?}",
+            result.err()
+        );
     }
 
     #[test]
@@ -172,7 +188,10 @@ mod printer_tests {
         // Test JSON printing when the feature is disabled
         // This should return an error
         let result = printer::print_json(&cpu_info);
-        assert!(result.is_err(), "print_json should have failed when json feature is disabled");
+        assert!(
+            result.is_err(),
+            "print_json should have failed when json feature is disabled"
+        );
     }
 
     #[test]
@@ -232,7 +251,10 @@ mod cli_integration_tests {
 
         // Basic check that output contains expected CPU information
         let stdout = String::from_utf8_lossy(&output.stdout);
-        assert!(stdout.contains("CPU Information"), "Output doesn't contain 'CPU Information'");
+        assert!(
+            stdout.contains("CPU Information"),
+            "Output doesn't contain 'CPU Information'"
+        );
         assert!(stdout.contains("Vendor:"), "Output doesn't contain 'Vendor'");
         assert!(stdout.contains("Model:"), "Output doesn't contain 'Model'");
         assert!(stdout.contains("Cores:"), "Output doesn't contain 'Cores'");
@@ -255,7 +277,10 @@ mod cli_integration_tests {
 
         // Can't easily check for color codes automatically, but command should run
         let stdout = String::from_utf8_lossy(&output.stdout);
-        assert!(stdout.contains("CPU Information"), "Output doesn't contain 'CPU Information'");
+        assert!(
+            stdout.contains("CPU Information"),
+            "Output doesn't contain 'CPU Information'"
+        );
     }
 
     #[test]
@@ -268,6 +293,9 @@ mod cli_integration_tests {
         let stdout = String::from_utf8_lossy(&output.stdout);
         assert!(stdout.contains("{"), "Output doesn't contain JSON opening brace");
         assert!(stdout.contains("}"), "Output doesn't contain JSON closing brace");
-        assert!(stdout.contains("\"vendor\":"), "Output doesn't contain vendor JSON field");
+        assert!(
+            stdout.contains("\"vendor\":"),
+            "Output doesn't contain vendor JSON field"
+        );
     }
 }

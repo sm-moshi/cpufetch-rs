@@ -5,11 +5,7 @@
 /// Calculate the max width of a multiline ASCII art string
 #[cfg(feature = "display")]
 pub fn max_width(ascii_art: &str) -> usize {
-    ascii_art
-        .lines()
-        .map(|line| line.len())
-        .max()
-        .unwrap_or(0)
+    ascii_art.lines().map(|line| line.len()).max().unwrap_or(0)
 }
 
 /// Frame an ASCII art string with a border
@@ -26,7 +22,12 @@ pub fn frame(ascii_art: &str, padding: usize) -> String {
     // Content with padding
     for line in lines {
         let padding_right = max_width - line.len() + padding;
-        result.push_str(&format!("│{}{}{}\n", " ".repeat(padding), line, " ".repeat(padding_right)));
+        result.push_str(&format!(
+            "│{}{}{}\n",
+            " ".repeat(padding),
+            line,
+            " ".repeat(padding_right)
+        ));
     }
 
     // Bottom border

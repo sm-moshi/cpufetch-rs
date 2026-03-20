@@ -1,4 +1,3 @@
-
 use crate::Error;
 use std::fmt;
 /// CPU frequency information
@@ -122,9 +121,9 @@ fn detect_frequency_linux() -> Result<Frequency, Error> {
 
 #[cfg(all(feature = "frequency", target_os = "windows"))]
 fn detect_frequency_windows() -> Result<Frequency, Error> {
+    use serde::Deserialize;
     use sysinfo::{CpuRefreshKind, System};
     use wmi::{COMLibrary, WMIConnection};
-    use serde::Deserialize;
 
     // Define a structure that matches Win32_Processor WMI class
     #[derive(Deserialize, Debug)]
@@ -160,11 +159,11 @@ fn detect_frequency_windows() -> Result<Frequency, Error> {
                     }
                 }
             }
-        }
+        },
         Err(e) => {
             // Log the error but continue with fallback
             eprintln!("Failed to initialize COM library for WMI: {}", e);
-        }
+        },
     }
 
     // Use sysinfo as a fallback if WMI failed to provide frequency information
