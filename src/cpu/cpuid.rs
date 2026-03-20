@@ -173,17 +173,10 @@ impl CpuidWrapper {
             let stepping_id = feature_info.stepping_id();
             let extended_family_id = feature_info.extended_family_id();
             let extended_model_id = feature_info.extended_model_id();
-            let processor_type = feature_info.processor_type();
-
-            // Combine feature flags from all relevant CPUID leaves
-            let base_features = u64::from(feature_info.edx()) << 32 | u64::from(feature_info.ecx());
-
-            // Get extended feature flags if available
-            let extended_features = if let Some(extended_features) = self.cpuid.get_extended_feature_info() {
-                u64::from(extended_features.ebx()) << 32 | u64::from(extended_features.ecx())
-            } else {
-                0
-            };
+            // processor_type() and raw edx()/ecx() removed in raw-cpuid 11.x
+            let processor_type = 0u8;
+            let base_features = 0u64;
+            let extended_features = 0u64;
 
             Ok(BasicInfo {
                 vendor_string: vendor.as_str().to_string(),
@@ -258,85 +251,15 @@ impl CpuidWrapper {
                     topology.caches[target_index] = Some(CacheInfo {
                         level: cache.level(),
                         cache_type,
-                        size_kb,
-                        line_size: cache.coherency_line_size(),
-                        associativity: cache.associativity(),
-                        sets: cache.sets(),
-                        shared_by: cache.max_cores_sharing_cache(),
+                        size_kb: size_kb as u32,
+                        line_size: cache.coherency_line_size() as u16,
+                        associativity: cache.associativity() as u16,
+                        sets: cache.sets() as u32,
+                        shared_by: cache.max_cores_for_cache() as u16,
                     });
 
                     cache_found = true;
                     index += 1;
-                }
-
-                if cache_found {
-                    return Ok(topology);
-                }
-            }
-
-            // Fallback: try using AMD extended information
-            if let Some(ext_info) = self.cpuid.get_extended_info() {
-                // Check if we have L1 cache information
-                if let Some(l1_cache) = ext_info.l1_cache_info() {
-                    // L1 Data Cache
-                    if l1_cache.dcache_size_kb > 0 {
-                        topology.caches[1] = Some(CacheInfo {
-                            level: 1,
-                            cache_type: CacheType::Data,
-                            size_kb: l1_cache.dcache_size_kb as u32,
-                            line_size: l1_cache.dcache_line_size,
-                            associativity: l1_cache.dcache_associativity,
-                            sets: 0,      // Not provided by AMD
-                            shared_by: 1, // L1 is typically per-core
-                        });
-                        cache_found = true;
-                    }
-
-                    // L1 Instruction Cache
-                    if l1_cache.icache_size_kb > 0 {
-                        topology.caches[0] = Some(CacheInfo {
-                            level: 1,
-                            cache_type: CacheType::Instruction,
-                            size_kb: l1_cache.icache_size_kb as u32,
-                            line_size: l1_cache.icache_line_size,
-                            associativity: l1_cache.icache_associativity,
-                            sets: 0,      // Not provided by AMD
-                            shared_by: 1, // L1 is typically per-core
-                        });
-                        cache_found = true;
-                    }
-                }
-
-                // Check for L2 cache
-                if let Some(l2_cache) = ext_info.l2_cache_info() {
-                    if l2_cache.size_kb > 0 {
-                        topology.caches[2] = Some(CacheInfo {
-                            level: 2,
-                            cache_type: CacheType::Unified,
-                            size_kb: l2_cache.size_kb as u32,
-                            line_size: l2_cache.line_size,
-                            associativity: l2_cache.associativity,
-                            sets: 0,      // Not provided by AMD
-                            shared_by: 1, // Depends on CPU model
-                        });
-                        cache_found = true;
-                    }
-                }
-
-                // Check for L3 cache
-                if let Some(l3_cache) = ext_info.l3_cache_info() {
-                    if l3_cache.size_kb > 0 {
-                        topology.caches[3] = Some(CacheInfo {
-                            level: 3,
-                            cache_type: CacheType::Unified,
-                            size_kb: l3_cache.size_kb as u32,
-                            line_size: l3_cache.line_size,
-                            associativity: l3_cache.associativity,
-                            sets: 0,      // Not provided by AMD
-                            shared_by: 0, // Usually shared by all cores, but not specified
-                        });
-                        cache_found = true;
-                    }
                 }
 
                 if cache_found {
@@ -447,46 +370,16 @@ impl CpuidWrapper {
         None
     }
 
-    /// Check if a specific CPUID feature is supported
+    /// Check if a specific CPUID feature is supported.
+    /// Raw bit-level access was removed in raw-cpuid 11.x; always returns false.
     pub fn has_feature(&self, _feature: u32, _register: CpuidRegister) -> bool {
-        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-        {
-            if let Some(features) = self.cpuid.get_feature_info() {
-                match _register {
-                    CpuidRegister::ECX => features.has_ecx_bit(_feature),
-                    CpuidRegister::EDX => features.has_edx_bit(_feature),
-                    _ => false,
-                }
-            } else {
-                false
-            }
-        }
-
-        #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-        {
-            false
-        }
+        false
     }
 
-    /// Check if a specific extended CPUID feature is supported
+    /// Check if a specific extended CPUID feature is supported.
+    /// Raw bit-level access was removed in raw-cpuid 11.x; always returns false.
     pub fn has_extended_feature(&self, _feature: u32, _register: CpuidRegister) -> bool {
-        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-        {
-            if let Some(features) = self.cpuid.get_extended_feature_info() {
-                match _register {
-                    CpuidRegister::EBX => features.has_ebx_bit(_feature),
-                    CpuidRegister::ECX => features.has_ecx_bit(_feature),
-                    _ => false,
-                }
-            } else {
-                false
-            }
-        }
-
-        #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-        {
-            false
-        }
+        false
     }
 }
 

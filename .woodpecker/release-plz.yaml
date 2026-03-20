@@ -17,7 +17,7 @@ steps:
     image: alpine:latest
     environment:
       GITHUB_TOKEN:
-        from_secret: github_token
+        from_secret: GITHUB_TOKEN
     commands:
       - apk add --no-cache git curl ca-certificates
       - curl -fsSL https://github.com/release-plz/release-plz/releases/latest/download/release-plz-x86_64-unknown-linux-musl.tar.gz -o /tmp/rp.tar.gz
