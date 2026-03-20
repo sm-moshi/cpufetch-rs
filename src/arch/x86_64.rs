@@ -59,8 +59,7 @@ pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
     let hypervisor = cpuid.detect_hypervisor();
 
     // Theoretical peak double-precision GFLOP/s
-    let peak_flops =
-        crate::cpu::perf::calculate_peak_flops(physical_cores, frequency.max, frequency.base, features);
+    let peak_flops = crate::cpu::perf::calculate_peak_flops(physical_cores, frequency.max, frequency.base, features);
 
     Ok(CpuInfo {
         vendor: cpu_vendor,
@@ -83,7 +82,11 @@ fn detect_frequency_for_info() -> Frequency {
     #[cfg(feature = "frequency")]
     {
         match crate::cpu::frequency::detect_frequency() {
-            Ok(f) => Frequency { base: f.base, current: f.current, max: f.max },
+            Ok(f) => Frequency {
+                base: f.base,
+                current: f.current,
+                max: f.max,
+            },
             Err(_) => Frequency::default(),
         }
     }

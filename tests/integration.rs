@@ -20,8 +20,8 @@ fn test_full_pipeline_no_panic() {
     // Render to string (display feature)
     #[cfg(feature = "display")]
     {
-        use cpufetch_rs::printer::print_cpu_info;
         use cpufetch_rs::cli::Args;
+        use cpufetch_rs::printer::print_cpu_info;
 
         let args = Args {
             frequency: false,
@@ -71,11 +71,7 @@ fn test_json_roundtrip() {
 #[cfg(feature = "cli")]
 fn test_cli_help_exits_zero() {
     use assert_cmd::Command;
-    Command::cargo_bin("cpufetch")
-        .unwrap()
-        .arg("--help")
-        .assert()
-        .success();
+    Command::cargo_bin("cpufetch").unwrap().arg("--help").assert().success();
 }
 
 #[test]
@@ -109,7 +105,11 @@ fn test_cli_json_output_is_valid() {
 /// On x86_64, after the frequency wire-up, at least one frequency field
 /// should be populated on Linux and macOS (Windows WMI is environment-dependent).
 #[test]
-#[cfg(all(target_arch = "x86_64", any(target_os = "linux", target_os = "macos"), feature = "frequency"))]
+#[cfg(all(
+    target_arch = "x86_64",
+    any(target_os = "linux", target_os = "macos"),
+    feature = "frequency"
+))]
 fn test_frequency_populated_on_x86_64() {
     let cpu = CpuInfo::new().expect("CpuInfo::new() should succeed");
     assert!(

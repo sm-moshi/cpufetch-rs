@@ -63,25 +63,23 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
     }
 
     if let Some(ref hv) = cpu_info.hypervisor {
-        info_lines.push(layout::format_kv(
-            "Hypervisor",
-            &hv.yellow().to_string(),
-            LABEL_WIDTH,
-        ));
+        info_lines.push(layout::format_kv("Hypervisor", &hv.yellow().to_string(), LABEL_WIDTH));
     }
 
     info_lines.push(layout::format_kv(
         "Cores",
-        &format!("{} physical, {} logical", cpu_info.physical_cores, cpu_info.logical_cores)
-            .green()
-            .to_string(),
+        &format!(
+            "{} physical, {} logical",
+            cpu_info.physical_cores, cpu_info.logical_cores
+        )
+        .green()
+        .to_string(),
         LABEL_WIDTH,
     ));
 
     // ── Frequency ───────────────────────────────────────────────────────────
-    let has_freq = cpu_info.frequency.base.is_some()
-        || cpu_info.frequency.max.is_some()
-        || cpu_info.frequency.current.is_some();
+    let has_freq =
+        cpu_info.frequency.base.is_some() || cpu_info.frequency.max.is_some() || cpu_info.frequency.current.is_some();
 
     if args.frequency || has_freq {
         if let Some(base) = cpu_info.frequency.base {

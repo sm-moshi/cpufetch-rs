@@ -49,6 +49,11 @@ pub enum Microarch {
     Zen3Plus,
     Zen4,
     Zen5,
+    // Apple Silicon (macOS aarch64)
+    AppleM1,
+    AppleM2,
+    AppleM3,
+    AppleM4,
 }
 
 impl Microarch {
@@ -93,6 +98,11 @@ impl Microarch {
             Microarch::Zen3Plus => Some(6),
             Microarch::Zen4 => Some(5),
             Microarch::Zen5 => Some(4),
+            // Apple Silicon (TSMC process nodes)
+            Microarch::AppleM1 => Some(5), // TSMC N5
+            Microarch::AppleM2 => Some(5), // TSMC N4P (enhanced 5 nm)
+            Microarch::AppleM3 => Some(3), // TSMC N3E
+            Microarch::AppleM4 => Some(3), // TSMC N3E
         }
     }
 
@@ -137,6 +147,11 @@ impl Microarch {
             Microarch::Zen3Plus => "Zen 3+",
             Microarch::Zen4 => "Zen 4",
             Microarch::Zen5 => "Zen 5",
+            // Apple Silicon
+            Microarch::AppleM1 => "Apple M1",
+            Microarch::AppleM2 => "Apple M2",
+            Microarch::AppleM3 => "Apple M3",
+            Microarch::AppleM4 => "Apple M4",
         }
     }
 }
@@ -247,15 +262,15 @@ fn detect_amd_uarch(family: u8, model: u8) -> Option<Microarch> {
         24 => Some(Microarch::Hygon),
         // Zen 3, Zen 3+, Zen 4 (family 25 / 0x19)
         25 => match model {
-            0x01 => Some(Microarch::Zen3),    // Milan (EPYC 7003)
-            0x08 => Some(Microarch::Zen3),    // Chagall (Threadripper Pro 5000WX)
-            0x21 => Some(Microarch::Zen3),    // Vermeer (Ryzen 5000)
+            0x01 => Some(Microarch::Zen3),     // Milan (EPYC 7003)
+            0x08 => Some(Microarch::Zen3),     // Chagall (Threadripper Pro 5000WX)
+            0x21 => Some(Microarch::Zen3),     // Vermeer (Ryzen 5000)
             0x40 => Some(Microarch::Zen3Plus), // Rembrandt (Ryzen 6000)
             0x44 => Some(Microarch::Zen3Plus), // Rembrandt-R
-            0x50 => Some(Microarch::Zen3),    // Cezanne
-            0x61 => Some(Microarch::Zen4),    // Raphael (Ryzen 7000)
-            0x74 => Some(Microarch::Zen4),    // Phoenix (Ryzen 7040)
-            0x78 => Some(Microarch::Zen4),    // Phoenix 2
+            0x50 => Some(Microarch::Zen3),     // Cezanne
+            0x61 => Some(Microarch::Zen4),     // Raphael (Ryzen 7000)
+            0x74 => Some(Microarch::Zen4),     // Phoenix (Ryzen 7040)
+            0x78 => Some(Microarch::Zen4),     // Phoenix 2
             _ => Some(Microarch::Zen3),
         },
         // Zen 5 (v1.06 addition, family 26 / 0x1A)
@@ -270,50 +285,32 @@ mod tests {
 
     #[test]
     fn test_intel_nehalem() {
-        assert_eq!(
-            detect_uarch(&Vendor::Intel, 6, 0x1A),
-            Some(Microarch::Nehalem)
-        );
+        assert_eq!(detect_uarch(&Vendor::Intel, 6, 0x1A), Some(Microarch::Nehalem));
     }
 
     #[test]
     fn test_intel_raptor_lake() {
-        assert_eq!(
-            detect_uarch(&Vendor::Intel, 6, 0xB7),
-            Some(Microarch::RaptorLake)
-        );
+        assert_eq!(detect_uarch(&Vendor::Intel, 6, 0xB7), Some(Microarch::RaptorLake));
     }
 
     #[test]
     fn test_intel_sapphire_rapids() {
-        assert_eq!(
-            detect_uarch(&Vendor::Intel, 6, 0xCF),
-            Some(Microarch::SapphireRapids)
-        );
+        assert_eq!(detect_uarch(&Vendor::Intel, 6, 0xCF), Some(Microarch::SapphireRapids));
     }
 
     #[test]
     fn test_amd_zen3() {
-        assert_eq!(
-            detect_uarch(&Vendor::AMD, 25, 0x21),
-            Some(Microarch::Zen3)
-        );
+        assert_eq!(detect_uarch(&Vendor::AMD, 25, 0x21), Some(Microarch::Zen3));
     }
 
     #[test]
     fn test_amd_zen5() {
-        assert_eq!(
-            detect_uarch(&Vendor::AMD, 26, 0),
-            Some(Microarch::Zen5)
-        );
+        assert_eq!(detect_uarch(&Vendor::AMD, 26, 0), Some(Microarch::Zen5));
     }
 
     #[test]
     fn test_amd_hygon() {
-        assert_eq!(
-            detect_uarch(&Vendor::AMD, 24, 0),
-            Some(Microarch::Hygon)
-        );
+        assert_eq!(detect_uarch(&Vendor::AMD, 24, 0), Some(Microarch::Hygon));
     }
 
     #[test]
