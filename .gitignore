@@ -29,3 +29,6 @@ memory-bank/
 .cursor/
 cpufetch-rs.code-workspace
 .cursorignore
+
+# Upstream C library — used locally only, not tracked in repo
+cpufetch-c/
