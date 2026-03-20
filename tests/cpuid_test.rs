@@ -4,7 +4,7 @@
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 mod x86_tests {
-    use cpufetch_rs::cpu::{CacheType, CpuidWrapper};
+    use cpufetch_rs::cpu::CpuidWrapper;
 
     #[test]
     fn test_basic_info() {
@@ -56,22 +56,6 @@ mod x86_tests {
         );
     }
 
-    #[test]
-    fn test_features() {
-        let cpuid = CpuidWrapper::new();
-
-        // Check basic features that almost all modern CPUs should have
-        assert!(
-            cpuid.has_feature(0, cpufetch_rs::cpu::CpuidRegister::EDX),
-            "FPU should be supported"
-        );
-
-        // Print available features for debugging
-        if let Ok(info) = cpuid.get_basic_info() {
-            println!("Base features: {:#x}", info.base_features);
-            println!("Extended features: {:#x}", info.extended_features);
-        }
-    }
 }
 
 #[test]

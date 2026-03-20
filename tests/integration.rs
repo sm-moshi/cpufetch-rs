@@ -102,7 +102,7 @@ fn test_cli_json_output_is_valid() {
 
 // ── Architecture-specific ────────────────────────────────────────────────────
 
-/// On x86_64, after the frequency wire-up, at least one frequency field
+/// On `x86_64`, after the frequency wire-up, at least one frequency field
 /// should be populated on Linux and macOS (Windows WMI is environment-dependent).
 #[test]
 #[cfg(all(
@@ -118,7 +118,7 @@ fn test_frequency_populated_on_x86_64() {
     );
 }
 
-/// On x86_64, microarchitecture should be detected for Intel and AMD CPUs.
+/// On `x86_64`, microarchitecture should be detected for Intel and AMD CPUs.
 #[test]
 #[cfg(target_arch = "x86_64")]
 fn test_microarch_detected_on_x86_64() {
@@ -139,7 +139,7 @@ fn test_microarch_detected_on_x86_64() {
     }
 }
 
-/// Peak FLOP/s should be positive when frequency is available on x86_64.
+/// Peak FLOP/s should be positive when frequency is available on `x86_64`.
 #[test]
 #[cfg(all(target_arch = "x86_64", feature = "frequency"))]
 fn test_peak_flops_positive_when_freq_available() {
@@ -147,7 +147,7 @@ fn test_peak_flops_positive_when_freq_available() {
     let has_freq = cpu.frequency.max.is_some() || cpu.frequency.base.is_some();
     if has_freq {
         assert!(
-            cpu.peak_flops.map(|f| f > 0.0).unwrap_or(false),
+            cpu.peak_flops.is_some_and(|f| f > 0.0),
             "peak_flops should be positive when frequency is available"
         );
     }
