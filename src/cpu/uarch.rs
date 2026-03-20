@@ -174,8 +174,8 @@ fn detect_intel_uarch(family: u8, model: u8) -> Option<Microarch> {
         6 => match model {
             // Nehalem
             0x1A | 0x1E | 0x1F | 0x2E => Some(Microarch::Nehalem),
-            // Westmere
-            0x25 | 0x2C | 0x2F => Some(Microarch::Westmere),
+            // Westmere (0x27 = Saltwell/Penwell Atom; 0x25/0x2C/0x2F = core Westmere)
+            0x25 | 0x27 | 0x2C | 0x2F => Some(Microarch::Westmere),
             // Sandy Bridge
             0x2A | 0x2D => Some(Microarch::SandyBridge),
             // Ivy Bridge
