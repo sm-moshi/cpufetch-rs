@@ -1,0 +1,112 @@
+# cpufetch-rs — Release pipeline
+# Builds Linux binaries, publishes to crates.io, creates a GitHub release.
+# Triggers on version tags (v*).
+#
+# Platform coverage (Linux-only — Woodpecker agents are x86_64 Linux):
+#   ✅ linux/x86_64  — native build
+#   ✅ linux/aarch64 — cross-compiled via gcc-aarch64-linux-gnu
+#   ✅ linux/i686    — cross-compiled via gcc-multilib
+#   ❌ macOS         — TODO: requires a native macOS Woodpecker agent on 10.0.10.4
+#   ❌ Windows       — TODO: requires mingw-w64 or a native Windows agent
+when:
+  - event: tag
+    ref: refs/tags/v*
+
+steps:
+  - name: restore-cache
+    failure: ignore
+    image: meltwater/drone-cache:v1.4.0@sha256:f4429bda3e4f2af2cceb40deee10b8cc5613aae7c8b08ad15c54109cad7fa9a3
+    settings:
+      backend: s3
+      endpoint:
+        from_secret: garage_s3_endpoint
+      access-key:
+        from_secret: garage_s3_access_key
+      secret-key:
+        from_secret: garage_s3_secret_key
+      region: garage
+      bucket: buildkit-cache
+      path-style: true
+      restore: true
+      cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
+      mount:
+        - .cargo-cache
+
+  - name: build-linux-x86_64
+    image: rust:1-slim
+    environment:
+      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+    commands:
+      - cargo build --release --locked
+      - mkdir -p dist
+      - cp target/release/cpufetch dist/cpufetch-linux-x86_64
+      - tar czvf dist/cpufetch-${CI_COMMIT_TAG}-linux-x86_64.tar.gz -C dist cpufetch-linux-x86_64
+      - sha256sum dist/cpufetch-${CI_COMMIT_TAG}-linux-x86_64.tar.gz > dist/cpufetch-${CI_COMMIT_TAG}-linux-x86_64.sha256
+
+  - name: build-linux-aarch64
+    image: rust:1-slim
+    environment:
+      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+    commands:
+      - apt-get update -o Acquire::ForceIPv4=true
+      - apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu
+      - rustup target add aarch64-unknown-linux-gnu
+      - cargo build --release --locked --target aarch64-unknown-linux-gnu
+      - cp target/aarch64-unknown-linux-gnu/release/cpufetch dist/cpufetch-linux-aarch64
+      - tar czvf dist/cpufetch-${CI_COMMIT_TAG}-linux-aarch64.tar.gz -C dist cpufetch-linux-aarch64
+      - sha256sum dist/cpufetch-${CI_COMMIT_TAG}-linux-aarch64.tar.gz > dist/cpufetch-${CI_COMMIT_TAG}-linux-aarch64.sha256
+
+  - name: build-linux-i686
+    image: rust:1-slim
+    environment:
+      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+    commands:
+      - apt-get update -o Acquire::ForceIPv4=true
+      - apt-get install -y --no-install-recommends gcc-multilib
+      - rustup target add i686-unknown-linux-gnu
+      - cargo build --release --locked --target i686-unknown-linux-gnu
+      - cp target/i686-unknown-linux-gnu/release/cpufetch dist/cpufetch-linux-i686
+      - tar czvf dist/cpufetch-${CI_COMMIT_TAG}-linux-i686.tar.gz -C dist cpufetch-linux-i686
+      - sha256sum dist/cpufetch-${CI_COMMIT_TAG}-linux-i686.tar.gz > dist/cpufetch-${CI_COMMIT_TAG}-linux-i686.sha256
+
+  - name: publish-crates
+    image: rust:1-slim
+    environment:
+      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      CARGO_REGISTRY_TOKEN:
+        from_secret: cargo_registry_token
+    commands:
+      - cargo publish --locked
+
+  - name: github-release
+    image: woodpeckerci/plugin-release@sha256:caf18bc34de626dff1de0cc0638ee8dff11af6c9372a5f3d79ab27b91a5ee4d9
+    settings:
+      api_key:
+        from_secret: github_token
+      base_url: https://api.github.com
+      title: "cpufetch-rs ${CI_COMMIT_TAG}"
+      files:
+        - dist/*.tar.gz
+        - dist/*.sha256
+
+  - name: rebuild-cache
+    failure: ignore
+    image: meltwater/drone-cache:v1.4.0@sha256:f4429bda3e4f2af2cceb40deee10b8cc5613aae7c8b08ad15c54109cad7fa9a3
+    settings:
+      backend: s3
+      endpoint:
+        from_secret: garage_s3_endpoint
+      access-key:
+        from_secret: garage_s3_access_key
+      secret-key:
+        from_secret: garage_s3_secret_key
+      region: garage
+      bucket: buildkit-cache
+      path-style: true
+      rebuild: true
+      cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
+      mount:
+        - .cargo-cache
+    when:
+      - status: [success, failure]
