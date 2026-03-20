@@ -5,35 +5,26 @@
 
 use colored::control::set_override;
 
-/// Set up the terminal display based on command line options
+/// Set up the terminal display based on command-line options.
 #[cfg(feature = "display")]
 pub fn setup_display(no_color: bool) {
-    // Disable colors if requested
     if no_color {
         set_override(false);
     }
 }
 
-/// Get the terminal width or default to 80 columns
+/// Format a key-value display line with aligned columns.
+///
+/// The label (with a trailing `:`) is left-padded to `label_width` characters,
+/// followed by two spaces and then the (pre-coloured) value string.
+///
+/// Example output with `label_width = 20`:
+/// ```text
+/// Vendor:               AMD
+/// Microarchitecture:    Zen 3
+/// ```
 #[cfg(feature = "display")]
-pub fn get_terminal_width() -> usize {
-    // Try to get the terminal width
-    if let Ok((width, _)) = crossterm::terminal::size() {
-        width as usize
-    } else {
-        // Default to 80 columns if we can't get the actual width
-        80
-    }
-}
-
-/// Pad a string to center it in the terminal
-#[cfg(feature = "display")]
-pub fn center_text(text: &str, width: usize) -> String {
-    let padding = if text.len() < width {
-        (width - text.len()) / 2
-    } else {
-        0
-    };
-
-    format!("{:width$}{}", "", text, width = padding)
+pub fn format_kv(label: &str, value: &str, label_width: usize) -> String {
+    let labelled = format!("{}:", label);
+    format!("{:<label_width$}  {}", labelled, value, label_width = label_width)
 }

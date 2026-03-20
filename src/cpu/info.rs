@@ -4,6 +4,7 @@
 //! across different architectures. It aims to provide a unified interface for
 //! accessing CPU details regardless of the underlying hardware.
 
+use crate::cpu::uarch::Microarch;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -100,6 +101,15 @@ pub struct CpuInfo {
     pub features: crate::cpu::X86Features,
     #[cfg(target_arch = "aarch64")]
     pub features: crate::cpu::ArmFeatures,
+    /// Detected CPU microarchitecture (if recognised)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub microarch: Option<Microarch>,
+    /// Hypervisor name if running inside a virtual machine
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hypervisor: Option<String>,
+    /// Theoretical peak double-precision performance in GFLOP/s
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub peak_flops: Option<f64>,
 }
 
 impl CpuInfo {
@@ -144,6 +154,9 @@ impl Default for CpuInfo {
             features: crate::cpu::X86Features::empty(),
             #[cfg(target_arch = "aarch64")]
             features: crate::cpu::ArmFeatures::empty(),
+            microarch: None,
+            hypervisor: None,
+            peak_flops: None,
         }
     }
 }

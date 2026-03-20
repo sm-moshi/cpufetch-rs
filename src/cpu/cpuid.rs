@@ -414,6 +414,39 @@ impl CpuidWrapper {
         }
     }
 
+    /// Detect whether the CPU is running inside a hypervisor.
+    ///
+    /// Checks CPUID leaf 0x1 ECX bit 31 (hypervisor present bit).  If set,
+    /// attempts to identify the hypervisor from leaf 0x40000000.
+    /// Returns `None` on bare metal or non-x86 platforms.
+    pub fn detect_hypervisor(&self) -> Option<String> {
+        #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+        {
+            let feature_info = self.cpuid.get_feature_info()?;
+            if !feature_info.has_hypervisor() {
+                return None;
+            }
+            // Try to name the hypervisor from leaf 0x40000000
+            if let Some(hv_info) = self.cpuid.get_hypervisor_info() {
+                let name = match hv_info.identify() {
+                    raw_cpuid::Hypervisor::Xen => "Xen",
+                    raw_cpuid::Hypervisor::VMware => "VMware",
+                    raw_cpuid::Hypervisor::HyperV => "Hyper-V",
+                    raw_cpuid::Hypervisor::KVM => "KVM",
+                    raw_cpuid::Hypervisor::Bhyve => "bhyve",
+                    raw_cpuid::Hypervisor::QNX => "QNX",
+                    raw_cpuid::Hypervisor::ACRN => "ACRN",
+                    _ => "Unknown",
+                };
+                return Some(name.to_string());
+            }
+            Some("Unknown".to_string())
+        }
+
+        #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+        None
+    }
+
     /// Check if a specific CPUID feature is supported
     pub fn has_feature(&self, _feature: u32, _register: CpuidRegister) -> bool {
         #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]

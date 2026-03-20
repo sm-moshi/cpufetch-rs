@@ -6,6 +6,8 @@
 pub mod cpuid;
 pub mod flags;
 pub mod info;
+pub mod perf;
+pub mod uarch;
 
 // Conditionally include the frequency module based on feature flag
 #[cfg(feature = "frequency")]
@@ -15,6 +17,7 @@ pub mod frequency;
 pub use cpuid::{CacheInfo, CacheType, CpuidError, CpuidWrapper};
 pub use flags::{ArmFeatures, FeatureError, X86Features, detect_features};
 pub use info::{CpuError, CpuInfo, Vendor, Version};
+pub use uarch::{Microarch, detect_uarch};
 
 // Conditionally re-export the frequency module
 #[cfg(feature = "frequency")]

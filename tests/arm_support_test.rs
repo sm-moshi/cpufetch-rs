@@ -48,6 +48,9 @@ mod arm_tests {
             frequency,
             cache_sizes,
             features,
+            microarch: None,
+            hypervisor: None,
+            peak_flops: None,
         }
     }
 
@@ -88,6 +91,9 @@ mod arm_tests {
             frequency,
             cache_sizes,
             features,
+            microarch: None,
+            hypervisor: None,
+            peak_flops: None,
         }
     }
 

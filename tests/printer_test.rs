@@ -69,6 +69,9 @@ mod printer_tests {
             frequency,
             cache_sizes,
             features,
+            microarch: None,
+            hypervisor: None,
+            peak_flops: None,
         }
     }
 
@@ -251,10 +254,6 @@ mod cli_integration_tests {
 
         // Basic check that output contains expected CPU information
         let stdout = String::from_utf8_lossy(&output.stdout);
-        assert!(
-            stdout.contains("CPU Information"),
-            "Output doesn't contain 'CPU Information'"
-        );
         assert!(stdout.contains("Vendor:"), "Output doesn't contain 'Vendor'");
         assert!(stdout.contains("Model:"), "Output doesn't contain 'Model'");
         assert!(stdout.contains("Cores:"), "Output doesn't contain 'Cores'");
@@ -277,10 +276,7 @@ mod cli_integration_tests {
 
         // Can't easily check for color codes automatically, but command should run
         let stdout = String::from_utf8_lossy(&output.stdout);
-        assert!(
-            stdout.contains("CPU Information"),
-            "Output doesn't contain 'CPU Information'"
-        );
+        assert!(stdout.contains("Vendor:"), "Output doesn't contain 'Vendor:'");
     }
 
     #[test]

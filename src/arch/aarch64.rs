@@ -25,6 +25,9 @@ pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
         },
         cache_sizes: [None; 4],
         features: detect_arm_features().map_err(|e| CpuError::InfoRead(e.to_string()))?,
+        microarch: None,
+        hypervisor: None,
+        peak_flops: None,
     })
 }
 
