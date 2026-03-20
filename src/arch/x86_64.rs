@@ -5,7 +5,7 @@
 
 use crate::cpu::info::Frequency;
 use crate::cpu::uarch::detect_uarch;
-use crate::cpu::{CacheInfo, CpuError, CpuInfo, CpuidWrapper, Vendor, Version, X86Features};
+use crate::cpu::{CpuError, CpuInfo, CpuidWrapper, Vendor, Version};
 
 /// Detect CPU information for x86_64 systems
 pub fn detect_cpu() -> Result<CpuInfo, CpuError> {

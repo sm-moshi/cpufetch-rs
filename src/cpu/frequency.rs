@@ -56,62 +56,32 @@ pub fn detect_frequency() -> Result<Frequency, Error> {
 // Platform-specific implementations
 #[cfg(all(feature = "frequency", target_os = "linux"))]
 fn detect_frequency_linux() -> Result<Frequency, Error> {
-    use procfs::CpuInfo;
     use std::fs::read_to_string;
 
     let mut frequency = Frequency::default();
 
-    // Try to get base frequency from cpuinfo
-    if let Ok(cpu_info) = CpuInfo::new() {
-        if let Some(cpu) = cpu_info.cpus.first() {
-            if let Some(cpu_mhz) = &cpu.get("cpu MHz") {
-                if let Ok(mhz) = cpu_mhz.parse::<f64>() {
-                    frequency.current = Some(mhz);
-                }
-            }
-
-            if let Some(max_mhz) = &cpu.get("cpu max MHz") {
-                if let Ok(mhz) = max_mhz.parse::<f64>() {
-                    frequency.max = Some(mhz);
-                }
-            }
-
-            if let Some(min_mhz) = &cpu.get("cpu min MHz") {
-                if let Ok(mhz) = min_mhz.parse::<f64>() {
-                    frequency.base = Some(mhz);
-                }
-            }
+    // Read current frequency from cpufreq sysfs
+    if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") {
+        if let Ok(khz) = content.trim().parse::<f64>() {
+            frequency.current = Some(khz / 1000.0);
         }
     }
 
-    // Try scaling_cur_freq if current frequency is still unknown
-    if frequency.current.is_none() {
-        if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") {
-            if let Ok(khz) = content.trim().parse::<f64>() {
-                frequency.current = Some(khz / 1000.0);
-            }
+    // Read max frequency from cpufreq sysfs
+    if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq") {
+        if let Ok(khz) = content.trim().parse::<f64>() {
+            frequency.max = Some(khz / 1000.0);
         }
     }
 
-    // Try scaling_max_freq if max frequency is still unknown
-    if frequency.max.is_none() {
-        if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq") {
-            if let Ok(khz) = content.trim().parse::<f64>() {
-                frequency.max = Some(khz / 1000.0);
-            }
+    // Read base frequency from cpufreq sysfs (not always present)
+    if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/base_frequency") {
+        if let Ok(khz) = content.trim().parse::<f64>() {
+            frequency.base = Some(khz / 1000.0);
         }
     }
 
-    // If we still don't have base frequency, try cpufreq/base_frequency
-    if frequency.base.is_none() {
-        if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/base_frequency") {
-            if let Ok(khz) = content.trim().parse::<f64>() {
-                frequency.base = Some(khz / 1000.0);
-            }
-        }
-    }
-
-    // Fallback to sysinfo if we couldn't get frequencies
+    // Fallback to sysinfo if sysfs yielded nothing
     if frequency.current.is_none() && frequency.max.is_none() && frequency.base.is_none() {
         return detect_frequency_generic();
     }

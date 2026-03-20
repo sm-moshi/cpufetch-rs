@@ -27,7 +27,7 @@ pub fn calculate_peak_flops(
         return None;
     }
 
-    let freq_ghz = freq_mhz / 1000.0;
+    let clock_ghz = freq_mhz / 1000.0;
     let cores = physical_cores as f64;
 
     // Double-precision SIMD width: doubles per SIMD register
@@ -45,7 +45,7 @@ pub fn calculate_peak_flops(
     // One VPU per core for mainstream CPUs; some Skylake-X Xeons have 2
     let vpu_count = 1.0_f64;
 
-    let gflops = cores * freq_ghz * simd_width_dp * fma_factor * vpu_count;
+    let gflops = cores * clock_ghz * simd_width_dp * fma_factor * vpu_count;
     Some(gflops)
 }
 
