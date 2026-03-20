@@ -55,7 +55,6 @@ mod x86_tests {
             "No caches detected, which is unexpected for modern CPUs"
         );
     }
-
 }
 
 #[test]
