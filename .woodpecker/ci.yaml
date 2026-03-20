@@ -10,7 +10,7 @@ when:
 steps:
   - name: restore-cache
     failure: ignore
-    image: meltwater/drone-cache:v1.4.0@sha256:f4429bda3e4f2af2cceb40deee10b8cc5613aae7c8b08ad15c54109cad7fa9a3
+    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
     settings:
       backend: s3
       endpoint:
@@ -26,11 +26,13 @@ steps:
       cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
       mount:
         - .cargo-cache
+        - .rustup-cache
 
   - name: fmt
     image: rust:1-slim
     environment:
       CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
     commands:
       - rustup toolchain install nightly --profile minimal --component rustfmt --no-self-update
       - cargo +nightly fmt --all --check
@@ -39,6 +41,7 @@ steps:
     image: rust:1-slim
     environment:
       CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
     commands:
       - rustup toolchain install beta --profile minimal --component clippy --no-self-update
       - cargo +beta clippy --all-targets --all-features -- -D warnings
@@ -47,6 +50,7 @@ steps:
     image: rust:1-slim
     environment:
       CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
     commands:
       - rustup toolchain install beta --profile minimal --no-self-update
       - cargo +beta test --all-features
@@ -55,13 +59,14 @@ steps:
     image: rust:1-slim
     environment:
       CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
       RUSTDOCFLAGS: "-D warnings"
     commands:
       - cargo +stable doc --no-deps --document-private-items --all-features
 
   - name: rebuild-cache
     failure: ignore
-    image: meltwater/drone-cache:v1.4.0@sha256:f4429bda3e4f2af2cceb40deee10b8cc5613aae7c8b08ad15c54109cad7fa9a3
+    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
     settings:
       backend: s3
       endpoint:
@@ -77,5 +82,6 @@ steps:
       cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
       mount:
         - .cargo-cache
+        - .rustup-cache
     when:
       - status: [success, failure]

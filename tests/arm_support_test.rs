@@ -192,7 +192,7 @@ mod arm_tests {
     // This test would require actual hardware or mocking of system calls
     // Just a placeholder for future implementation
     #[test]
-    #[ignore]
+    #[ignore = "requires real aarch64 hardware"]
     fn test_real_aarch64_detection() {
         // This test would run the actual detection code
         // It's marked as ignored since it requires real hardware

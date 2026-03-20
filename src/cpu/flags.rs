@@ -132,6 +132,10 @@ pub fn detect_features() -> Result<X86Features, FeatureError> {
 }
 
 /// Detect CPU features for ARM architectures
+///
+/// # Errors
+///
+/// Returns `FeatureError` if feature detection is not supported.
 #[cfg(target_arch = "aarch64")]
 pub fn detect_features() -> Result<ArmFeatures, FeatureError> {
     let mut features = ArmFeatures::empty();

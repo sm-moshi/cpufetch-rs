@@ -16,7 +16,7 @@ fn test_cpu_info_new() {
     assert!(info.logical_cores > 0);
 
     // Print CPU info for debugging
-    println!("Detected CPU: {:?}", info);
+    println!("Detected CPU: {info:?}");
 }
 
 #[test]
@@ -30,7 +30,7 @@ fn test_cpu_info_static() {
     assert!(info.logical_cores > 0);
 
     // Print CPU info for debugging
-    println!("Static CPU info: {:?}", info);
+    println!("Static CPU info: {info:?}");
 }
 
 #[cfg(target_arch = "x86_64")]

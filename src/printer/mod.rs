@@ -28,6 +28,10 @@ const LABEL_WIDTH: usize = 20;
 const LOGO_INFO_GAP: usize = 3;
 
 /// Print CPU information with an optional ASCII art logo in a side-by-side layout.
+///
+/// # Errors
+///
+/// Returns an error if writing to stdout fails.
 #[cfg(feature = "display")]
 pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
     layout::setup_display(args.no_color);
@@ -56,7 +60,7 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
         if let Some(nm) = uarch.process_nm() {
             info_lines.push(layout::format_kv(
                 "Technology",
-                &format!("{} nm", nm).green().to_string(),
+                &format!("{nm} nm").green().to_string(),
                 LABEL_WIDTH,
             ));
         }
@@ -85,21 +89,21 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
         if let Some(base) = cpu_info.frequency.base {
             info_lines.push(layout::format_kv(
                 "Base Frequency",
-                &format!("{:.0} MHz", base).green().to_string(),
+                &format!("{base:.0} MHz").green().to_string(),
                 LABEL_WIDTH,
             ));
         }
         if let Some(max) = cpu_info.frequency.max {
             info_lines.push(layout::format_kv(
                 "Max Frequency",
-                &format!("{:.0} MHz", max).green().to_string(),
+                &format!("{max:.0} MHz").green().to_string(),
                 LABEL_WIDTH,
             ));
         }
         if let Some(cur) = cpu_info.frequency.current {
             info_lines.push(layout::format_kv(
                 "Current Frequency",
-                &format!("{:.0} MHz", cur).green().to_string(),
+                &format!("{cur:.0} MHz").green().to_string(),
                 LABEL_WIDTH,
             ));
         }
@@ -112,7 +116,7 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
             if let Some(kb) = size {
                 info_lines.push(layout::format_kv(
                     label,
-                    &format!("{} KB", kb).green().to_string(),
+                    &format!("{kb} KB").green().to_string(),
                     LABEL_WIDTH,
                 ));
             }
@@ -120,14 +124,14 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
     }
 
     // ── Peak performance ────────────────────────────────────────────────────
-    if let Some(flops) = cpu_info.peak_flops {
-        if flops > 0.0 {
-            info_lines.push(layout::format_kv(
-                "Peak Performance",
-                &format!("{:.2} GFLOP/s", flops).green().to_string(),
-                LABEL_WIDTH,
-            ));
-        }
+    if let Some(flops) = cpu_info.peak_flops
+        && flops > 0.0
+    {
+        info_lines.push(layout::format_kv(
+            "Peak Performance",
+            &format!("{flops:.2} GFLOP/s").green().to_string(),
+            LABEL_WIDTH,
+        ));
     }
 
     // ── CPU features ────────────────────────────────────────────────────────
@@ -192,7 +196,7 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
     // ── Render ──────────────────────────────────────────────────────────────
     if args.no_logo {
         for line in &info_lines {
-            println!("{}", line);
+            println!("{line}");
         }
         return Ok(());
     }
@@ -202,7 +206,7 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
     let raw_framed = ascii::frame(raw_logo, 1);
 
     // Visual width = chars on the first frame line (all lines are equal-width)
-    let logo_visual_width = raw_framed.lines().next().map(|l| l.chars().count()).unwrap_or(0);
+    let logo_visual_width = raw_framed.lines().next().map_or(0, |l| l.chars().count());
 
     // Colourize each frame line individually to avoid ANSI code fragmentation
     let color_name = logo::get_logo_color_name(&cpu_info.vendor);
@@ -213,7 +217,7 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
     let blank_left = " ".repeat(logo_visual_width);
 
     for i in 0..max_rows {
-        let right = info_lines.get(i).map(String::as_str).unwrap_or("");
+        let right = info_lines.get(i).map_or("", String::as_str);
         if let Some(left) = logo_lines.get(i) {
             println!("{}{}{}", left, " ".repeat(LOGO_INFO_GAP), right);
         } else {
@@ -225,10 +229,14 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
 }
 
 /// Print CPU information in JSON format.
+///
+/// # Errors
+///
+/// Returns an error if serialisation or writing to stdout fails.
 #[cfg(all(feature = "display", feature = "json"))]
 pub fn print_json(cpu_info: &CpuInfo) -> anyhow::Result<()> {
     let json = serde_json::to_string_pretty(cpu_info)?;
-    println!("{}", json);
+    println!("{json}");
     Ok(())
 }
 

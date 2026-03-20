@@ -2,6 +2,8 @@
 //!
 //! This module provides utilities for working with ASCII art in the terminal.
 
+use std::fmt::Write as FmtWrite;
+
 /// Compute the visual (character) width of the widest line in a multi-line string.
 ///
 /// Uses `.chars().count()` so that multi-byte UTF-8 characters (such as box-drawing
@@ -27,17 +29,17 @@ pub fn frame(ascii_art: &str, padding: usize) -> String {
     let mut result = String::new();
 
     // Top border
-    result.push_str(&format!("┌{}┐\n", "─".repeat(inner_width)));
+    let _ = writeln!(result, "┌{}┐", "─".repeat(inner_width));
 
     // Content with left and right padding to reach consistent width
     for line in &lines {
         let line_chars = line.chars().count();
         let pad_right = max_w - line_chars + padding;
-        result.push_str(&format!("│{}{}{}│\n", " ".repeat(padding), line, " ".repeat(pad_right)));
+        let _ = writeln!(result, "│{}{}{}│", " ".repeat(padding), line, " ".repeat(pad_right));
     }
 
     // Bottom border
-    result.push_str(&format!("└{}┘", "─".repeat(inner_width)));
+    let _ = write!(result, "└{}┘", "─".repeat(inner_width));
 
     result
 }
@@ -65,9 +67,9 @@ pub fn combine_horizontal(left: &str, right: &str, left_visual_width: usize, spa
         let gap = " ".repeat(spacing);
 
         if left_lines.get(i).is_some() {
-            result.push_str(&format!("{}{}{}\n", left_line, gap, right_line));
+            let _ = writeln!(result, "{left_line}{gap}{right_line}");
         } else {
-            result.push_str(&format!("{}{}{}\n", blank_left, gap, right_line));
+            let _ = writeln!(result, "{blank_left}{gap}{right_line}");
         }
     }
 

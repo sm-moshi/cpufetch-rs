@@ -58,55 +58,41 @@ pub enum Microarch {
 
 impl Microarch {
     /// Process technology in nm, if known
+    #[must_use]
     pub fn process_nm(&self) -> Option<u32> {
         match self {
-            // Intel
             Microarch::Willamette => Some(180),
-            Microarch::Northwood => Some(130),
+            Microarch::Northwood | Microarch::K8 => Some(130),
             Microarch::Prescott => Some(90),
             Microarch::Nehalem => Some(45),
-            Microarch::Westmere => Some(32),
-            Microarch::SandyBridge => Some(32),
-            Microarch::IvyBridge => Some(22),
-            Microarch::Haswell => Some(22),
-            Microarch::Broadwell => Some(14),
-            Microarch::Skylake => Some(14),
-            Microarch::KabyLake => Some(14),
-            Microarch::CometLake => Some(14),
-            Microarch::CannonLake => Some(10),
-            Microarch::IceLake => Some(10),
-            Microarch::TigerLake => Some(10),
-            Microarch::AlderLake => Some(10),
-            Microarch::RaptorLake => Some(10),
-            Microarch::MeteorLake => Some(4),
-            Microarch::SapphireRapids => Some(10),
-            Microarch::GraniteRapids => Some(3),
-            // AMD
-            Microarch::K8 => Some(130),
             Microarch::K10 => Some(65),
             Microarch::Bobcat => Some(40),
-            Microarch::Bulldozer => Some(32),
-            Microarch::Piledriver => Some(32),
-            Microarch::Steamroller => Some(28),
-            Microarch::Excavator => Some(28),
-            Microarch::Jaguar => Some(28),
-            Microarch::Zen => Some(14),
+            Microarch::Westmere | Microarch::SandyBridge | Microarch::Bulldozer | Microarch::Piledriver => Some(32),
+            Microarch::IvyBridge | Microarch::Haswell => Some(22),
+            Microarch::Steamroller | Microarch::Excavator | Microarch::Jaguar => Some(28),
+            Microarch::Broadwell
+            | Microarch::Skylake
+            | Microarch::KabyLake
+            | Microarch::CometLake
+            | Microarch::Zen
+            | Microarch::Hygon => Some(14),
+            Microarch::CannonLake
+            | Microarch::IceLake
+            | Microarch::TigerLake
+            | Microarch::AlderLake
+            | Microarch::RaptorLake
+            | Microarch::SapphireRapids => Some(10),
             Microarch::ZenPlus => Some(12),
-            Microarch::Zen2 => Some(7),
-            Microarch::Hygon => Some(14),
-            Microarch::Zen3 => Some(7),
+            Microarch::Zen2 | Microarch::Zen3 => Some(7),
             Microarch::Zen3Plus => Some(6),
-            Microarch::Zen4 => Some(5),
-            Microarch::Zen5 => Some(4),
-            // Apple Silicon (TSMC process nodes)
-            Microarch::AppleM1 => Some(5), // TSMC N5
-            Microarch::AppleM2 => Some(5), // TSMC N4P (enhanced 5 nm)
-            Microarch::AppleM3 => Some(3), // TSMC N3E
-            Microarch::AppleM4 => Some(3), // TSMC N3E
+            Microarch::Zen4 | Microarch::AppleM1 | Microarch::AppleM2 => Some(5), // N5/N4P
+            Microarch::MeteorLake | Microarch::Zen5 => Some(4),
+            Microarch::GraniteRapids | Microarch::AppleM3 | Microarch::AppleM4 => Some(3), // N3E
         }
     }
 
     /// Human-readable name for display
+    #[must_use]
     pub fn name(&self) -> &'static str {
         match self {
             // Intel
@@ -166,6 +152,7 @@ impl fmt::Display for Microarch {
 ///
 /// The `family` value passed here should already include the extended family
 /// (as computed in `x86_64.rs`).
+#[must_use]
 pub fn detect_uarch(vendor: &Vendor, family: u8, model: u8) -> Option<Microarch> {
     match vendor {
         Vendor::Intel => detect_intel_uarch(family, model),
@@ -235,7 +222,6 @@ fn detect_amd_uarch(family: u8, model: u8) -> Option<Microarch> {
         20 => Some(Microarch::Bobcat),
         // Bulldozer family (21)
         21 => match model {
-            0x01 => Some(Microarch::Bulldozer),
             0x02 | 0x10..=0x1F => Some(Microarch::Piledriver),
             0x30..=0x3F => Some(Microarch::Steamroller),
             0x60..=0x7F => Some(Microarch::Excavator),
@@ -245,33 +231,17 @@ fn detect_amd_uarch(family: u8, model: u8) -> Option<Microarch> {
         22 => Some(Microarch::Jaguar),
         // Zen, Zen+, Zen 2 (family 23 / 0x17)
         23 => match model {
-            0x01 => Some(Microarch::Zen),     // Naples (EPYC 1000)
-            0x08 => Some(Microarch::ZenPlus), // Pinnacle Ridge
-            0x11 => Some(Microarch::Zen),     // Raven Ridge
-            0x18 => Some(Microarch::ZenPlus), // Picasso
-            0x20 => Some(Microarch::Zen2),    // Castle Peak (Threadripper 3000)
-            0x31 => Some(Microarch::Zen2),    // Rome (EPYC 7002)
-            0x47 => Some(Microarch::Zen2),    // Renoir
-            0x60 => Some(Microarch::Zen2),    // Renoir
-            0x68 => Some(Microarch::Zen2),    // Lucienne
-            0x71 => Some(Microarch::Zen2),    // Matisse
-            0x90 => Some(Microarch::Zen2),    // Van Gogh
-            _ => Some(Microarch::Zen),
+            0x08 | 0x18 => Some(Microarch::ZenPlus), // Pinnacle Ridge, Picasso
+            0x20 | 0x31 | 0x47 | 0x60 | 0x68 | 0x71 | 0x90 => Some(Microarch::Zen2), // Castle Peak, Rome, Renoir, Lucienne, Matisse, Van Gogh
+            _ => Some(Microarch::Zen),                                               // Naples, Raven Ridge, others
         },
         // Hygon — Chinese x86 clone (v1.05 addition, family 24 / 0x18)
         24 => Some(Microarch::Hygon),
         // Zen 3, Zen 3+, Zen 4 (family 25 / 0x19)
         25 => match model {
-            0x01 => Some(Microarch::Zen3),     // Milan (EPYC 7003)
-            0x08 => Some(Microarch::Zen3),     // Chagall (Threadripper Pro 5000WX)
-            0x21 => Some(Microarch::Zen3),     // Vermeer (Ryzen 5000)
-            0x40 => Some(Microarch::Zen3Plus), // Rembrandt (Ryzen 6000)
-            0x44 => Some(Microarch::Zen3Plus), // Rembrandt-R
-            0x50 => Some(Microarch::Zen3),     // Cezanne
-            0x61 => Some(Microarch::Zen4),     // Raphael (Ryzen 7000)
-            0x74 => Some(Microarch::Zen4),     // Phoenix (Ryzen 7040)
-            0x78 => Some(Microarch::Zen4),     // Phoenix 2
-            _ => Some(Microarch::Zen3),
+            0x40 | 0x44 => Some(Microarch::Zen3Plus),    // Rembrandt, Rembrandt-R
+            0x61 | 0x74 | 0x78 => Some(Microarch::Zen4), // Raphael, Phoenix, Phoenix 2
+            _ => Some(Microarch::Zen3),                  // Milan, Chagall, Vermeer, Cezanne, others
         },
         // Zen 5 (v1.06 addition, family 26 / 0x1A)
         26 => Some(Microarch::Zen5),

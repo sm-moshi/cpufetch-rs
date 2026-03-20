@@ -1,6 +1,6 @@
 //! CPUID parsing and abstraction layer.
 //!
-//! This module provides a safe interface for parsing CPUID information on x86/x86_64
+//! This module provides a safe interface for parsing CPUID information on `x86/x86_64`
 //! processors. It abstracts the complexities of raw CPUID access and provides structured
 //! data for CPU information gathering.
 //!
@@ -53,18 +53,13 @@ pub struct CacheInfo {
 }
 
 /// Types of CPU caches
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum CacheType {
     Data,
     Instruction,
     Unified,
+    #[default]
     Unknown,
-}
-
-impl Default for CacheType {
-    fn default() -> Self {
-        Self::Unknown
-    }
 }
 
 impl fmt::Display for CacheType {
@@ -140,11 +135,16 @@ impl CpuidWrapper {
     }
 
     #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
+    #[must_use]
     pub fn new() -> Self {
         Self {}
     }
 
     /// Get basic CPU information
+    ///
+    /// # Errors
+    ///
+    /// Returns `CpuidError` if CPUID access fails or the architecture is unsupported.
     pub fn get_basic_info(&self) -> Result<BasicInfo, CpuidError> {
         #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
         {
@@ -199,6 +199,10 @@ impl CpuidWrapper {
     }
 
     /// Get cache topology information
+    ///
+    /// # Errors
+    ///
+    /// Returns `CpuidError` if the architecture is unsupported.
     pub fn get_cache_topology(&self) -> Result<CacheTopology, CpuidError> {
         #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
         {
@@ -268,7 +272,7 @@ impl CpuidWrapper {
             }
 
             // Last resort: use legacy cache descriptors
-            if let Some(cache_info) = self.cpuid.get_cache_info() {
+            if self.cpuid.get_cache_info().is_some() {
                 // We'll check for cache descriptors, but they're not well supported in newer CPUs
                 // So this is primarily a fallback method
                 // In raw-cpuid 11.5.0, the API for legacy cache info has changed
@@ -342,6 +346,7 @@ impl CpuidWrapper {
     /// Checks CPUID leaf 0x1 ECX bit 31 (hypervisor present bit).  If set,
     /// attempts to identify the hypervisor from leaf 0x40000000.
     /// Returns `None` on bare metal or non-x86 platforms.
+    #[must_use]
     pub fn detect_hypervisor(&self) -> Option<String> {
         #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
         {
@@ -372,12 +377,14 @@ impl CpuidWrapper {
 
     /// Check if a specific CPUID feature is supported.
     /// Raw bit-level access was removed in raw-cpuid 11.x; always returns false.
+    #[must_use]
     pub fn has_feature(&self, _feature: u32, _register: CpuidRegister) -> bool {
         false
     }
 
     /// Check if a specific extended CPUID feature is supported.
     /// Raw bit-level access was removed in raw-cpuid 11.x; always returns false.
+    #[must_use]
     pub fn has_extended_feature(&self, _feature: u32, _register: CpuidRegister) -> bool {
         false
     }

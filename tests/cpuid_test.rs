@@ -1,6 +1,6 @@
 //! Integration tests for CPUID parsing
 //!
-//! These tests verify the CPUID parsing works correctly on x86_64 systems.
+//! These tests verify the CPUID parsing works correctly on `x86_64` systems.
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 mod x86_tests {

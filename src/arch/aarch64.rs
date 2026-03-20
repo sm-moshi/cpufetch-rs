@@ -8,6 +8,10 @@ use crate::cpu::info::Frequency;
 use crate::cpu::{ArmFeatures, CpuError, CpuInfo, Vendor, Version};
 
 /// Detect CPU information for ARM64 systems.
+///
+/// # Errors
+///
+/// Returns `CpuError` if CPU detection fails.
 pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
     // On macOS, attempt Apple Silicon identification first.
     #[cfg(all(target_os = "macos", feature = "macos"))]
@@ -24,8 +28,8 @@ pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
             model: 0,
             stepping: 0,
         },
-        physical_cores: num_cpus::get_physical() as u32,
-        logical_cores: num_cpus::get() as u32,
+        physical_cores: u32::try_from(num_cpus::get_physical()).unwrap_or(0),
+        logical_cores: u32::try_from(num_cpus::get()).unwrap_or(0),
         frequency: Frequency::default(),
         cache_sizes: [None; 4],
         features: detect_arm_features(),
@@ -85,9 +89,10 @@ mod apple_silicon {
 
     /// Read a sysctl key as a `u32`, reinterpreting signed bits correctly.
     ///
-    /// Many macOS hw.* keys are CTLTYPE_INT (signed 32-bit) but contain values
+    /// Many macOS `hw.*` keys are `CTLTYPE_INT` (signed 32-bit) but contain values
     /// that look like large unsigned constants (e.g. CPU family IDs such as
-    /// `0xDA33D83D`).  Casting `i32 as u32` preserves the bit pattern.
+    /// `0xDA33_D83D`).  Casting `i32 as u32` preserves the bit pattern.
+    #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
     fn sysctl_u32(name: &str) -> Option<u32> {
         use sysctl::{Ctl, CtlValue, Sysctl};
         let ctl = Ctl::new(name).ok()?;
@@ -104,17 +109,17 @@ mod apple_silicon {
     ///
     /// Values are constants from `<mach/machine.h>` (macOS 15 / Sequoia):
     /// ```text
-    /// CPUFAMILY_ARM_FIRESTORM_ICESTORM  0x1b588bb3  (M1 / A14)
-    /// CPUFAMILY_ARM_BLIZZARD_AVALANCHE  0xda33d83d  (M2 / A15)
-    /// CPUFAMILY_ARM_EVEREST_SAWTOOTH    0x8765edea  (M3 / A16/A17 Pro)
-    /// CPUFAMILY_ARM_COLL                0x17d5b93a  (M4 / A18 Pro)
+    /// CPUFAMILY_ARM_FIRESTORM_ICESTORM  0x1b58_8bb3  (M1 / A14)
+    /// CPUFAMILY_ARM_BLIZZARD_AVALANCHE  0xda33_d83d  (M2 / A15)
+    /// CPUFAMILY_ARM_EVEREST_SAWTOOTH    0x8765_edea  (M3 / A16/A17 Pro)
+    /// CPUFAMILY_ARM_COLL                0x17d5_b93a  (M4 / A18 Pro)
     /// ```
     fn classify_family(family: u32) -> Option<(&'static str, Microarch)> {
         match family {
-            0x1b588bb3 => Some(("M1", Microarch::AppleM1)),
-            0xda33d83d => Some(("M2", Microarch::AppleM2)),
-            0x8765edea => Some(("M3", Microarch::AppleM3)),
-            0x17d5b93a => Some(("M4", Microarch::AppleM4)),
+            0x1b58_8bb3 => Some(("M1", Microarch::AppleM1)),
+            0xda33_d83d => Some(("M2", Microarch::AppleM2)),
+            0x8765_edea => Some(("M3", Microarch::AppleM3)),
+            0x17d5_b93a => Some(("M4", Microarch::AppleM4)),
             _ => None,
         }
     }
@@ -123,11 +128,12 @@ mod apple_silicon {
     ///
     /// `hw.perflevel0.physicalcpu` = P-core count (performance, highest frequency)
     /// `hw.perflevel1.physicalcpu` = E-core count (efficiency, lower frequency)
+    #[allow(clippy::match_same_arms)]
     fn chip_variant(generation: &str, p_cores: u32, e_cores: u32) -> &'static str {
         let total = p_cores + e_cores;
         match generation {
             "M1" => match (p_cores, e_cores, total) {
-                (4, 4, 8) => "",        // M1
+                (4, 4, 8) => "",        // M1 base
                 (6, 2, 8) => " Pro",    // M1 Pro (8-core config)
                 (8, 2, 10) => " Pro",   // M1 Pro (10-core config)
                 (8, 4, 12) => " Max",   // M1 Max
@@ -135,7 +141,7 @@ mod apple_silicon {
                 _ => "",
             },
             "M2" => match (p_cores, e_cores, total) {
-                (4, 4, 8) => "",        // M2
+                (4, 4, 8) => "",        // M2 base
                 (6, 4, 10) => " Pro",   // M2 Pro (10-core config)
                 (8, 4, 12) => " Pro",   // M2 Pro (12-core config)
                 (_, _, 16) => " Max",   // M2 Max
@@ -143,7 +149,7 @@ mod apple_silicon {
                 _ => "",
             },
             "M3" => match (p_cores, e_cores, total) {
-                (4, 4, 8) => "",        // M3
+                (4, 4, 8) => "",        // M3 base
                 (5, 6, 11) => " Pro",   // M3 Pro (11-core config)
                 (6, 6, 12) => " Pro",   // M3 Pro (12-core config)
                 (12, 4, 16) => " Max",  // M3 Max
@@ -151,11 +157,11 @@ mod apple_silicon {
                 _ => "",
             },
             "M4" => match (p_cores, e_cores, total) {
-                (4, 6, 10) => "",                    // M4
-                (10, 4, 14) => " Pro",               // M4 Pro 14-core
-                (12, 4, 16) => " Max",               // M4 Max (16-core, if/when released)
-                (_, _, 20) => " Max",                // M4 Max larger config
-                (_, _, 28) | (_, _, 40) => " Ultra", // M4 Ultra (speculative)
+                (4, 6, 10) => "",            // M4 base
+                (10, 4, 14) => " Pro",       // M4 Pro 14-core
+                (12, 4, 16) => " Max",       // M4 Max (16-core, if/when released)
+                (_, _, 20) => " Max",        // M4 Max larger config
+                (_, _, 28 | 40) => " Ultra", // M4 Ultra (speculative)
                 _ => "",
             },
             _ => "",
@@ -174,10 +180,10 @@ mod apple_silicon {
         let e_cores = sysctl_u32("hw.perflevel1.physicalcpu").unwrap_or(0);
 
         let variant = chip_variant(generation, p_cores, e_cores);
-        let brand_string = format!("Apple {}{}", generation, variant);
+        let brand_string = format!("Apple {generation}{variant}");
 
-        let physical_cores = num_cpus::get_physical() as u32;
-        let logical_cores = num_cpus::get() as u32;
+        let physical_cores = u32::try_from(num_cpus::get_physical()).unwrap_or(0);
+        let logical_cores = u32::try_from(num_cpus::get()).unwrap_or(0);
 
         let features = detect_arm_features();
 
@@ -208,15 +214,15 @@ mod apple_silicon {
         #[test]
         fn test_known_families() {
             // M1 — CPUFAMILY_ARM_FIRESTORM_ICESTORM
-            assert!(matches!(classify_family(0x1b588bb3), Some(("M1", Microarch::AppleM1))));
+            assert!(matches!(classify_family(0x1b58_8bb3), Some(("M1", Microarch::AppleM1))));
             // M2 — CPUFAMILY_ARM_BLIZZARD_AVALANCHE
-            assert!(matches!(classify_family(0xda33d83d), Some(("M2", Microarch::AppleM2))));
+            assert!(matches!(classify_family(0xda33_d83d), Some(("M2", Microarch::AppleM2))));
             // M3 — CPUFAMILY_ARM_EVEREST_SAWTOOTH
-            assert!(matches!(classify_family(0x8765edea), Some(("M3", Microarch::AppleM3))));
-            // M4 — CPUFAMILY_ARM_COLL (0x17D5B93A — the user's chip)
-            assert!(matches!(classify_family(0x17d5b93a), Some(("M4", Microarch::AppleM4))));
+            assert!(matches!(classify_family(0x8765_edea), Some(("M3", Microarch::AppleM3))));
+            // M4 — CPUFAMILY_ARM_COLL (0x17D5_B93A — the user's chip)
+            assert!(matches!(classify_family(0x17d5_b93a), Some(("M4", Microarch::AppleM4))));
             // Unknown family → None (no panic)
-            assert!(classify_family(0xdeadbeef).is_none());
+            assert!(classify_family(0xdead_beef).is_none());
         }
 
         #[test]

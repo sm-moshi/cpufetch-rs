@@ -22,12 +22,12 @@ pub fn calculate_peak_flops(
 ) -> Option<f64> {
     use crate::cpu::X86Features;
 
-    let freq_mhz = freq_max_mhz.or(freq_base_mhz)?;
-    if freq_mhz <= 0.0 {
+    let mhz = freq_max_mhz.or(freq_base_mhz)?;
+    if mhz <= 0.0 {
         return None;
     }
 
-    let clock_ghz = freq_mhz / 1000.0;
+    let clock_ghz = mhz / 1000.0;
     let cores = physical_cores as f64;
 
     // Double-precision SIMD width: doubles per SIMD register

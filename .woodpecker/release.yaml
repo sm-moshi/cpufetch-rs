@@ -15,7 +15,7 @@ when:
 steps:
   - name: restore-cache
     failure: ignore
-    image: meltwater/drone-cache:v1.4.0@sha256:f4429bda3e4f2af2cceb40deee10b8cc5613aae7c8b08ad15c54109cad7fa9a3
+    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
     settings:
       backend: s3
       endpoint:
@@ -31,11 +31,13 @@ steps:
       cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
       mount:
         - .cargo-cache
+        - .rustup-cache
 
   - name: build-linux-x86_64
     image: rust:1-slim
     environment:
       CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
     commands:
       - cargo build --release --locked
       - mkdir -p dist
@@ -47,6 +49,7 @@ steps:
     image: rust:1-slim
     environment:
       CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
       CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
     commands:
       - apt-get update -o Acquire::ForceIPv4=true
@@ -61,6 +64,7 @@ steps:
     image: rust:1-slim
     environment:
       CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
     commands:
       - apt-get update -o Acquire::ForceIPv4=true
       - apt-get install -y --no-install-recommends gcc-multilib
@@ -74,6 +78,7 @@ steps:
     image: rust:1-slim
     environment:
       CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
       CARGO_REGISTRY_TOKEN:
         from_secret: cargo_registry_token
     commands:
@@ -92,7 +97,7 @@ steps:
 
   - name: rebuild-cache
     failure: ignore
-    image: meltwater/drone-cache:v1.4.0@sha256:f4429bda3e4f2af2cceb40deee10b8cc5613aae7c8b08ad15c54109cad7fa9a3
+    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
     settings:
       backend: s3
       endpoint:
@@ -108,5 +113,6 @@ steps:
       cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
       mount:
         - .cargo-cache
+        - .rustup-cache
     when:
       - status: [success, failure]

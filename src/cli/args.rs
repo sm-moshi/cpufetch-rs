@@ -2,6 +2,7 @@ use clap::Parser;
 /// cpufetch - A fast, modern CPU detection tool
 #[derive(Parser, Debug, Default)]
 #[clap(author, version, about, long_about = None)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Args {
     /// Show CPU frequency information
     #[clap(short, long)]

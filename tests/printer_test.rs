@@ -287,8 +287,8 @@ mod cli_integration_tests {
 
         // Check that output is valid JSON
         let stdout = String::from_utf8_lossy(&output.stdout);
-        assert!(stdout.contains("{"), "Output doesn't contain JSON opening brace");
-        assert!(stdout.contains("}"), "Output doesn't contain JSON closing brace");
+        assert!(stdout.contains('{'), "Output doesn't contain JSON opening brace");
+        assert!(stdout.contains('}'), "Output doesn't contain JSON closing brace");
         assert!(
             stdout.contains("\"vendor\":"),
             "Output doesn't contain vendor JSON field"

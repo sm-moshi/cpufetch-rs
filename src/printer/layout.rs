@@ -25,6 +25,6 @@ pub fn setup_display(no_color: bool) {
 /// ```
 #[cfg(feature = "display")]
 pub fn format_kv(label: &str, value: &str, label_width: usize) -> String {
-    let labelled = format!("{}:", label);
-    format!("{:<label_width$}  {}", labelled, value, label_width = label_width)
+    let labelled = format!("{label}:");
+    format!("{labelled:<label_width$}  {value}")
 }

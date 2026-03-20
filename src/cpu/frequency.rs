@@ -15,19 +15,23 @@ impl fmt::Display for Frequency {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let base = self
             .base
-            .map_or_else(|| "Unknown".to_string(), |v| format!("{:.2} MHz", v));
+            .map_or_else(|| "Unknown".to_string(), |v| format!("{v:.2} MHz"));
         let current = self
             .current
-            .map_or_else(|| "Unknown".to_string(), |v| format!("{:.2} MHz", v));
+            .map_or_else(|| "Unknown".to_string(), |v| format!("{v:.2} MHz"));
         let max = self
             .max
-            .map_or_else(|| "Unknown".to_string(), |v| format!("{:.2} MHz", v));
+            .map_or_else(|| "Unknown".to_string(), |v| format!("{v:.2} MHz"));
 
-        write!(f, "Base: {}, Current: {}, Max: {}", base, current, max)
+        write!(f, "Base: {base}, Current: {current}, Max: {max}")
     }
 }
 
 /// Detects CPU frequency using platform-specific methods
+///
+/// # Errors
+///
+/// Returns an error if frequency detection fails on the current platform.
 pub fn detect_frequency() -> Result<Frequency, Error> {
     #[cfg(feature = "frequency")]
     {
@@ -43,7 +47,7 @@ pub fn detect_frequency() -> Result<Frequency, Error> {
 
         // Generic fallback using sysinfo
         #[cfg(not(any(target_os = "linux", target_os = "windows", target_os = "macos")))]
-        return detect_frequency_generic();
+        return Ok(detect_frequency_generic());
     }
 
     // Default fallback for when the frequency feature is disabled
@@ -83,7 +87,7 @@ fn detect_frequency_linux() -> Result<Frequency, Error> {
 
     // Fallback to sysinfo if sysfs yielded nothing
     if frequency.current.is_none() && frequency.max.is_none() && frequency.base.is_none() {
-        return detect_frequency_generic();
+        return Ok(detect_frequency_generic());
     }
 
     Ok(frequency)
@@ -148,33 +152,44 @@ fn detect_frequency_windows() -> Result<Frequency, Error> {
 
     // Fallback to generic method if we couldn't get any frequencies
     if frequency.current.is_none() && frequency.max.is_none() && frequency.base.is_none() {
-        return detect_frequency_generic();
+        return Ok(detect_frequency_generic());
     }
 
     Ok(frequency)
 }
 
+// Result is needed for uniformity with other platform detect_ fns called from detect_frequency.
 #[cfg(all(feature = "frequency", target_os = "macos"))]
+#[allow(clippy::unnecessary_wraps)]
 fn detect_frequency_macos() -> Result<Frequency, Error> {
+    Ok(detect_frequency_macos_inner())
+}
+
+#[cfg(all(feature = "frequency", target_os = "macos"))]
+fn detect_frequency_macos_inner() -> Frequency {
     use sysctl::{CtlValue, Sysctl};
 
     let mut frequency = Frequency::default();
 
     // Try sysctl for frequency information
-    if let Ok(ctl) = sysctl::Ctl::new("hw.cpufrequency") {
-        if let Ok(CtlValue::S64(freq)) = ctl.value() {
+    // Precision loss is acceptable: CPU frequencies in Hz fit in f64 mantissa at GHz scale.
+    #[allow(clippy::cast_precision_loss)]
+    {
+        if let Ok(ctl) = sysctl::Ctl::new("hw.cpufrequency")
+            && let Ok(CtlValue::S64(freq)) = ctl.value()
+        {
             frequency.current = Some((freq as f64) / 1_000_000.0);
         }
-    }
 
-    if let Ok(ctl) = sysctl::Ctl::new("hw.cpufrequency_max") {
-        if let Ok(CtlValue::S64(freq)) = ctl.value() {
+        if let Ok(ctl) = sysctl::Ctl::new("hw.cpufrequency_max")
+            && let Ok(CtlValue::S64(freq)) = ctl.value()
+        {
             frequency.max = Some((freq as f64) / 1_000_000.0);
         }
-    }
 
-    if let Ok(ctl) = sysctl::Ctl::new("hw.cpufrequency_min") {
-        if let Ok(CtlValue::S64(freq)) = ctl.value() {
+        if let Ok(ctl) = sysctl::Ctl::new("hw.cpufrequency_min")
+            && let Ok(CtlValue::S64(freq)) = ctl.value()
+        {
             frequency.base = Some((freq as f64) / 1_000_000.0);
         }
     }
@@ -184,11 +199,11 @@ fn detect_frequency_macos() -> Result<Frequency, Error> {
         return detect_frequency_generic();
     }
 
-    Ok(frequency)
+    frequency
 }
 
 #[cfg(feature = "frequency")]
-fn detect_frequency_generic() -> Result<Frequency, Error> {
+fn detect_frequency_generic() -> Frequency {
     use sysinfo::{CpuRefreshKind, System};
 
     let mut frequency = Frequency::default();
@@ -196,7 +211,9 @@ fn detect_frequency_generic() -> Result<Frequency, Error> {
     system.refresh_cpu_specifics(CpuRefreshKind::everything());
 
     if let Some(cpu) = system.cpus().first() {
-        frequency.current = Some(cpu.frequency() as f64);
+        #[allow(clippy::cast_precision_loss)]
+        let freq = cpu.frequency() as f64;
+        frequency.current = Some(freq);
     }
 
     // Try to estimate base/max if we have current frequency
@@ -206,5 +223,5 @@ fn detect_frequency_generic() -> Result<Frequency, Error> {
         frequency.max = Some(current * 1.1);
     }
 
-    Ok(frequency)
+    frequency
 }

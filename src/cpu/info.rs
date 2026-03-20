@@ -56,15 +56,15 @@ impl fmt::Display for Frequency {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let base = self
             .base
-            .map_or_else(|| "Unknown".to_string(), |v| format!("{:.2} MHz", v));
+            .map_or_else(|| "Unknown".to_string(), |v| format!("{v:.2} MHz"));
         let current = self
             .current
-            .map_or_else(|| "Unknown".to_string(), |v| format!("{:.2} MHz", v));
+            .map_or_else(|| "Unknown".to_string(), |v| format!("{v:.2} MHz"));
         let max = self
             .max
-            .map_or_else(|| "Unknown".to_string(), |v| format!("{:.2} MHz", v));
+            .map_or_else(|| "Unknown".to_string(), |v| format!("{v:.2} MHz"));
 
-        write!(f, "Base: {}, Current: {}, Max: {}", base, current, max)
+        write!(f, "Base: {base}, Current: {current}, Max: {max}")
     }
 }
 
@@ -113,7 +113,11 @@ pub struct CpuInfo {
 }
 
 impl CpuInfo {
-    /// Creates a new CpuInfo instance by detecting the current CPU
+    /// Creates a new `CpuInfo` instance by detecting the current CPU
+    ///
+    /// # Errors
+    ///
+    /// Returns `CpuError` if CPU detection fails.
     pub fn new() -> Result<Self, CpuError> {
         #[cfg(target_arch = "x86_64")]
         {
@@ -133,9 +137,10 @@ impl CpuInfo {
     ///
     /// This is useful when you want to avoid the overhead of detecting
     /// the CPU multiple times during program execution.
+    #[must_use]
     pub fn get() -> &'static Self {
-        static CPU_INFO: once_cell::sync::Lazy<CpuInfo> =
-            once_cell::sync::Lazy::new(|| CpuInfo::new().expect("Failed to detect CPU information"));
+        static CPU_INFO: std::sync::LazyLock<CpuInfo> =
+            std::sync::LazyLock::new(|| CpuInfo::new().expect("Failed to detect CPU information"));
         &CPU_INFO
     }
 }
