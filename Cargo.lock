@@ -252,7 +252,7 @@ dependencies = [
  "clap",
  "colored",
  "crossterm",
- "libc 1.0.0-alpha.1",
+ "libc 1.0.0-alpha.3",
  "num_cpus",
  "once_cell",
  "platforms",
@@ -609,9 +609,9 @@ checksum = "6a82ae493e598baaea5209805c49bbf2ea7de956d50d7da0da1164f9c6d28543"
 
 [[package]]
 name = "libc"
-version = "1.0.0-alpha.1"
+version = "1.0.0-alpha.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7222002e5385b4d9327755661e3847c970e8fbf9dea6da8c57f16e8cfbff53a8"
+checksum = "e136bfa874086c78f34d6eba98c423fefe464ce57f38164d16893ba8ed358e70"
 
 [[package]]
 name = "linux-raw-sys"
