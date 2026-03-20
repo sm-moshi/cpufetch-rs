@@ -29,7 +29,7 @@ version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "819e7219dbd41043ac279b19830f2efc897156490d7fd6ea916720117ee66311"
 dependencies = [
- "libc 0.2.175",
+ "libc 0.2.183",
 ]
 
 [[package]]
@@ -97,7 +97,7 @@ dependencies = [
  "anstyle",
  "bstr",
  "doc-comment",
- "libc 0.2.175",
+ "libc 0.2.183",
  "predicates",
  "predicates-core",
  "predicates-tree",
@@ -223,7 +223,7 @@ version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fde0e0ec90c9dfb3b4b1a0891a7dcd0e2bffde2f7efed5fe7c9bb00e5bfb915e"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -385,8 +385,8 @@ version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "976dd42dc7e85965fe702eb8164f21f450704bdde31faefd6471dba214cb594e"
 dependencies = [
- "libc 0.2.175",
- "windows-sys 0.59.0",
+ "libc 0.2.183",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -516,7 +516,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73fea8450eea4bac3940448fb7ae50d91f034f941199fcd9d909a5a07aa455f0"
 dependencies = [
  "cfg-if",
- "libc 0.2.175",
+ "libc 0.2.183",
  "r-efi",
  "wasi 0.14.2+wasi-0.2.4",
 ]
@@ -603,9 +603,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.175"
+version = "0.2.183"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a82ae493e598baaea5209805c49bbf2ea7de956d50d7da0da1164f9c6d28543"
+checksum = "b5b646652bf6661599e1da8901b3b9522896f01e736bad5f723fe7a3a27f899d"
 
 [[package]]
 name = "libc"
@@ -615,9 +615,9 @@ checksum = "7222002e5385b4d9327755661e3847c970e8fbf9dea6da8c57f16e8cfbff53a8"
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.9.3"
+version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe7db12097d22ec582439daf8618b8fdd1a7bef6270e9af3b1ebcd30893cf413"
+checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
 
 [[package]]
 name = "litrs"
@@ -662,7 +662,7 @@ version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2886843bf800fba2e3377cff24abf6379b4c4d5c6681eaf9ea5b0d15090450bd"
 dependencies = [
- "libc 0.2.175",
+ "libc 0.2.183",
  "log",
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.52.0",
@@ -699,7 +699,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "91df4bbde75afed763b708b7eee1e8e7651e02d97f6d5dd763e89367e957b23b"
 dependencies = [
  "hermit-abi",
- "libc 0.2.175",
+ "libc 0.2.183",
 ]
 
 [[package]]
@@ -717,7 +717,7 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33fafba39597d6dc1fb709123dfa8289d39406734be322956a69f0931c73bb15"
 dependencies = [
- "libc 0.2.175",
+ "libc 0.2.183",
  "objc2-core-foundation",
 ]
 
@@ -744,7 +744,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e401f977ab385c9e4e3ab30627d6f26d00e2c73eef317493c4ec6d468726cf8"
 dependencies = [
  "cfg-if",
- "libc 0.2.175",
+ "libc 0.2.183",
  "redox_syscall",
  "smallvec",
  "windows-targets",
@@ -905,15 +905,15 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "rustix"
-version = "1.0.5"
+version = "1.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d97817398dd4bb2e6da002002db259209759911da105da92bec29ccb12cf58bf"
+checksum = "b6fe4565b9518b83ef4f91bb47ce29620ca828bd32cb7e408f0062e9930ba190"
 dependencies = [
  "bitflags",
  "errno",
- "libc 0.2.175",
+ "libc 0.2.183",
  "linux-raw-sys",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1047,7 +1047,7 @@ version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8621587d4798caf8eb44879d42e56b9a93ea5dcd315a6487c357130095b62801"
 dependencies = [
- "libc 0.2.175",
+ "libc 0.2.183",
  "signal-hook-registry",
 ]
 
@@ -1057,7 +1057,7 @@ version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34db1a06d485c9142248b7a054f034b349b212551f3dfd19c94d45a754a217cd"
 dependencies = [
- "libc 0.2.175",
+ "libc 0.2.183",
  "mio",
  "signal-hook",
 ]
@@ -1068,7 +1068,7 @@ version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9e9e0b4211b72e7b8b6e85c807d36c212bdb33ea8587f7569562a84df5465b1"
 dependencies = [
- "libc 0.2.175",
+ "libc 0.2.183",
 ]
 
 [[package]]
@@ -1116,7 +1116,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b3a0d0aba8bf96a0e1ddfdc352fc53b3df7f39318c71854910c3c4b024ae52c"
 dependencies = [
  "cc",
- "libc 0.2.175",
+ "libc 0.2.183",
 ]
 
 [[package]]
@@ -1128,7 +1128,7 @@ dependencies = [
  "bitflags",
  "byteorder",
  "enum-as-inner",
- "libc 0.2.175",
+ "libc 0.2.183",
  "thiserror",
  "walkdir",
 ]
@@ -1139,7 +1139,7 @@ version = "0.38.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92ab6a2f8bfe508deb3c6406578252e491d299cbbf3bc0529ecc3313aee4a52f"
 dependencies = [
- "libc 0.2.175",
+ "libc 0.2.183",
  "memchr",
  "ntapi",
  "objc2-core-foundation",
@@ -1149,15 +1149,15 @@ dependencies = [
 
 [[package]]
 name = "tempfile"
-version = "3.23.0"
+version = "3.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d31c77bdf42a745371d260a26ca7163f1e0924b64afa0b688e61b5a9fa02f16"
+checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
  "getrandom",
  "once_cell",
  "rustix",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1281,7 +1281,7 @@ version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09ac3b126d3914f9849036f826e054cbabdc8519970b8998ddaf3b5bd3c65f11"
 dependencies = [
- "libc 0.2.175",
+ "libc 0.2.183",
 ]
 
 [[package]]
@@ -1389,7 +1389,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
