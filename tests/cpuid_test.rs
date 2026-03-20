@@ -43,7 +43,7 @@ mod x86_tests {
                     cache_info.shared_by
                 );
             } else {
-                println!("Cache[{}]: Not present", i);
+                println!("Cache[{i}]: Not present");
             }
         }
 
@@ -67,7 +67,7 @@ fn test_cpu_info_cache_detection() {
     println!("Detected cache sizes: {:?}", info.cache_sizes);
 
     // On modern systems, at least one cache should be detected
-    let has_cache = info.cache_sizes.iter().any(|c| c.is_some());
+    let has_cache = info.cache_sizes.iter().any(Option::is_some);
     assert!(has_cache, "No cache detected, which is unexpected for modern CPUs");
 }
 

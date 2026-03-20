@@ -7,7 +7,7 @@
 # Uses alpine + curl to fetch the release-plz musl binary from GitHub releases,
 # avoiding Docker Hub rate-limit issues with marcoieni/release-plz:latest-full.
 #
-# Requires repo secret: GITHUB_TOKEN (push + tag + release events)
+# Requires org secret: github_token (same secret used by the release pipeline)
 when:
   - event: push
     branch: main
@@ -15,9 +15,9 @@ when:
 steps:
   - name: release-plz
     image: alpine:latest
-    secrets:
-      - source: GITHUB_TOKEN
-        target: GITHUB_TOKEN
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
     commands:
       - apk add --no-cache git curl ca-certificates
       - curl -fsSL https://github.com/release-plz/release-plz/releases/latest/download/release-plz-x86_64-unknown-linux-musl.tar.gz -o /tmp/rp.tar.gz
