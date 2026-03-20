@@ -37,7 +37,7 @@ pub fn detect_frequency() -> Result<Frequency, Error> {
     {
         // Platform-specific implementations
         #[cfg(target_os = "linux")]
-        return detect_frequency_linux();
+        return Ok(detect_frequency_linux());
 
         #[cfg(target_os = "windows")]
         return detect_frequency_windows();
@@ -59,38 +59,38 @@ pub fn detect_frequency() -> Result<Frequency, Error> {
 
 // Platform-specific implementations
 #[cfg(all(feature = "frequency", target_os = "linux"))]
-fn detect_frequency_linux() -> Result<Frequency, Error> {
+fn detect_frequency_linux() -> Frequency {
     use std::fs::read_to_string;
 
     let mut frequency = Frequency::default();
 
     // Read current frequency from cpufreq sysfs
-    if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") {
-        if let Ok(khz) = content.trim().parse::<f64>() {
-            frequency.current = Some(khz / 1000.0);
-        }
+    if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
+        && let Ok(khz) = content.trim().parse::<f64>()
+    {
+        frequency.current = Some(khz / 1000.0);
     }
 
     // Read max frequency from cpufreq sysfs
-    if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq") {
-        if let Ok(khz) = content.trim().parse::<f64>() {
-            frequency.max = Some(khz / 1000.0);
-        }
+    if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq")
+        && let Ok(khz) = content.trim().parse::<f64>()
+    {
+        frequency.max = Some(khz / 1000.0);
     }
 
     // Read base frequency from cpufreq sysfs (not always present)
-    if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/base_frequency") {
-        if let Ok(khz) = content.trim().parse::<f64>() {
-            frequency.base = Some(khz / 1000.0);
-        }
+    if let Ok(content) = read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/base_frequency")
+        && let Ok(khz) = content.trim().parse::<f64>()
+    {
+        frequency.base = Some(khz / 1000.0);
     }
 
     // Fallback to sysinfo if sysfs yielded nothing
     if frequency.current.is_none() && frequency.max.is_none() && frequency.base.is_none() {
-        return Ok(detect_frequency_generic());
+        return detect_frequency_generic();
     }
 
-    Ok(frequency)
+    frequency
 }
 
 #[cfg(all(feature = "frequency", target_os = "windows"))]

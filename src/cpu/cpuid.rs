@@ -128,8 +128,9 @@ impl Default for CpuidWrapper {
 }
 
 impl CpuidWrapper {
-    /// Create a new CpuidWrapper instance
+    /// Create a new `CpuidWrapper` instance
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    #[must_use]
     pub fn new() -> Self {
         Self { cpuid: CpuId::new() }
     }
@@ -158,14 +159,13 @@ impl CpuidWrapper {
             let brand_string = self
                 .cpuid
                 .get_processor_brand_string()
-                .map(|brand| brand.as_str().trim().to_string())
-                .unwrap_or_else(|| "Unknown".to_string());
+                .map_or_else(|| "Unknown".to_string(), |brand| brand.as_str().trim().to_string());
 
             // Get basic feature information
             let feature_info = self
                 .cpuid
                 .get_feature_info()
-                .ok_or_else(|| CpuidError::UnsupportedLeaf(1))?;
+                .ok_or(CpuidError::UnsupportedLeaf(1))?;
 
             // Extract family, model, stepping details
             let family_id = feature_info.family_id();
@@ -211,11 +211,11 @@ impl CpuidWrapper {
 
             // Try Intel/AMD deterministic cache parameters first (preferred method)
             if let Some(deterministic_cache) = self.cpuid.get_cache_parameters() {
-                let mut cache_iter = deterministic_cache;
+                let cache_iter = deterministic_cache;
                 let mut index = 0;
 
                 // Iterate through all available cache levels
-                while let Some(cache) = cache_iter.next() {
+                for cache in cache_iter {
                     if index >= MAX_CACHE_LEVELS {
                         break;
                     }
@@ -252,7 +252,9 @@ impl CpuidWrapper {
                         },
                     };
 
-                    topology.caches[target_index] = Some(CacheInfo {
+                    // Cache fields are bounded by CPU hardware limits; truncation is intentional.
+                    #[allow(clippy::cast_possible_truncation)]
+                    let cache_entry = CacheInfo {
                         level: cache.level(),
                         cache_type,
                         size_kb: size_kb as u32,
@@ -260,7 +262,8 @@ impl CpuidWrapper {
                         associativity: cache.associativity() as u16,
                         sets: cache.sets() as u32,
                         shared_by: cache.max_cores_for_cache() as u16,
-                    });
+                    };
+                    topology.caches[target_index] = Some(cache_entry);
 
                     cache_found = true;
                     index += 1;
@@ -434,7 +437,7 @@ mod tests {
         let topology = wrapper.get_cache_topology().expect("Failed to get cache topology");
 
         // Most CPUs should have at least one cache
-        let has_at_least_one_cache = topology.caches.iter().any(|cache| cache.is_some());
+        let has_at_least_one_cache = topology.caches.iter().any(Option::is_some);
         assert!(has_at_least_one_cache, "No caches detected on this CPU");
     }
 }

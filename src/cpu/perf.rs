@@ -14,6 +14,7 @@
 ///
 /// Returns `None` if frequency is unknown or zero.
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[must_use]
 pub fn calculate_peak_flops(
     physical_cores: u32,
     freq_max_mhz: Option<f64>,
@@ -28,7 +29,7 @@ pub fn calculate_peak_flops(
     }
 
     let clock_ghz = mhz / 1000.0;
-    let cores = physical_cores as f64;
+    let cores = f64::from(physical_cores);
 
     // Double-precision SIMD width: doubles per SIMD register
     let simd_width_dp = if features.contains(X86Features::AVX512F) {
@@ -64,7 +65,7 @@ mod tests {
         let result = calculate_peak_flops(4, Some(4000.0), None, features);
         assert!(result.is_some());
         let flops = result.unwrap();
-        assert!((flops - 128.0).abs() < 0.01, "Expected 128.0, got {}", flops);
+        assert!((flops - 128.0).abs() < 0.01, "Expected 128.0, got {flops}");
     }
 
     #[test]
@@ -87,6 +88,6 @@ mod tests {
         let result = calculate_peak_flops(1, Some(1000.0), None, features);
         assert!(result.is_some());
         let flops = result.unwrap();
-        assert!((flops - 16.0).abs() < 0.01, "Expected 16.0, got {}", flops);
+        assert!((flops - 16.0).abs() < 0.01, "Expected 16.0, got {flops}");
     }
 }

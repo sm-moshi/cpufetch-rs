@@ -63,6 +63,10 @@ bitflags! {
 }
 
 /// Detect CPU features for the current architecture
+///
+/// # Errors
+///
+/// Returns `FeatureError::UnsupportedArch` on non-x86 targets.
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub fn detect_features() -> Result<X86Features, FeatureError> {
     let mut features = X86Features::empty();

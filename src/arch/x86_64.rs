@@ -1,20 +1,24 @@
-//! x86_64 architecture-specific CPU detection
+//! `x86_64` architecture-specific CPU detection
 //!
-//! This module provides functionality for detecting CPU information on x86_64 systems
+//! This module provides functionality for detecting CPU information on `x86_64` systems
 //! using CPUID instructions through our CPUID wrapper.
 
 use crate::cpu::info::Frequency;
 use crate::cpu::uarch::detect_uarch;
 use crate::cpu::{CpuError, CpuInfo, CpuidWrapper, Vendor, Version};
 
-/// Detect CPU information for x86_64 systems
+/// Detect CPU information for `x86_64` systems
+///
+/// # Errors
+///
+/// Returns `CpuError` if CPUID access fails or CPU information cannot be read.
 pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
     let cpuid = CpuidWrapper::new();
 
     // Basic CPU information via CPUID
     let basic_info = cpuid
         .get_basic_info()
-        .map_err(|e| CpuError::InfoRead(format!("Failed to get basic CPU info: {}", e)))?;
+        .map_err(|e| CpuError::InfoRead(format!("Failed to get basic CPU info: {e}")))?;
 
     // Vendor
     let cpu_vendor = match basic_info.vendor_string.as_str() {
@@ -24,14 +28,16 @@ pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
     };
 
     // Family/model/stepping with extended IDs folded in (Intel SDM Vol. 2A §3.2)
+    // Shift is intentionally truncating: extended IDs are 4-bit fields, shift by 4 stays in u8 range.
+    #[allow(clippy::cast_possible_truncation)]
     let version = Version {
         family: if basic_info.family == 0xF {
-            ((basic_info.extended_family as u16) << 4) as u8 + basic_info.family
+            (u16::from(basic_info.extended_family) << 4) as u8 + basic_info.family
         } else {
             basic_info.family
         },
         model: if basic_info.family == 0xF || basic_info.family == 0x6 {
-            ((basic_info.extended_model as u16) << 4) as u8 + basic_info.model
+            (u16::from(basic_info.extended_model) << 4) as u8 + basic_info.model
         } else {
             basic_info.model
         },
@@ -40,11 +46,11 @@ pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
 
     // ISA feature flags
     let features = crate::cpu::detect_features()
-        .map_err(|e| CpuError::InfoRead(format!("Failed to detect CPU features: {}", e)))?;
+        .map_err(|e| CpuError::InfoRead(format!("Failed to detect CPU features: {e}")))?;
 
     // Core counts
-    let logical_cores = num_cpus::get() as u32;
-    let physical_cores = num_cpus::get_physical() as u32;
+    let logical_cores = u32::try_from(num_cpus::get()).unwrap_or(0);
+    let physical_cores = u32::try_from(num_cpus::get_physical()).unwrap_or(0);
 
     // Frequency — delegate to the platform-specific detection in `cpu::frequency`
     let frequency = detect_frequency_for_info();
@@ -131,7 +137,7 @@ mod tests {
         assert!(!info.brand_string.is_empty());
         assert!(info.logical_cores > 0);
         assert!(info.physical_cores > 0);
-        println!("Detected x86_64 CPU: {:?}", info);
+        println!("Detected x86_64 CPU: {info:?}");
         println!("Cache sizes: {:?}", info.cache_sizes);
         println!("Microarch: {:?}", info.microarch);
         println!("Hypervisor: {:?}", info.hypervisor);
