@@ -162,10 +162,7 @@ impl CpuidWrapper {
                 .map_or_else(|| "Unknown".to_string(), |brand| brand.as_str().trim().to_string());
 
             // Get basic feature information
-            let feature_info = self
-                .cpuid
-                .get_feature_info()
-                .ok_or(CpuidError::UnsupportedLeaf(1))?;
+            let feature_info = self.cpuid.get_feature_info().ok_or(CpuidError::UnsupportedLeaf(1))?;
 
             // Extract family, model, stepping details
             let family_id = feature_info.family_id();

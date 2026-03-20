@@ -45,8 +45,8 @@ pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
     };
 
     // ISA feature flags
-    let features = crate::cpu::detect_features()
-        .map_err(|e| CpuError::InfoRead(format!("Failed to detect CPU features: {e}")))?;
+    let features =
+        crate::cpu::detect_features().map_err(|e| CpuError::InfoRead(format!("Failed to detect CPU features: {e}")))?;
 
     // Core counts
     let logical_cores = u32::try_from(num_cpus::get()).unwrap_or(0);
