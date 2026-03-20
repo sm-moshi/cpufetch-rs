@@ -132,9 +132,8 @@ fn test_microarch_detected_on_x86_64() {
                 cpu.version.family, cpu.version.model
             );
         },
-        Vendor::Intel | Vendor::AMD => {},
         _ => {
-            // ARM, Apple, Unknown — microarch detection is not yet implemented
+            // Intel/AMD with known uarch, or ARM/Apple/Unknown — nothing to assert
         },
     }
 }
