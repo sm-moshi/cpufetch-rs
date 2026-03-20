@@ -28,7 +28,7 @@ pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
         logical_cores: num_cpus::get() as u32,
         frequency: Frequency::default(),
         cache_sizes: [None; 4],
-        features: detect_arm_features()?,
+        features: detect_arm_features(),
         microarch: None,
         hypervisor: None,
         peak_flops: None,
@@ -37,30 +37,41 @@ pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
 
 // ── ARM feature detection ────────────────────────────────────────────────────
 
-fn detect_arm_features() -> Result<ArmFeatures, CpuError> {
+fn detect_arm_features() -> ArmFeatures {
     let mut features = ArmFeatures::empty();
 
     #[cfg(target_arch = "aarch64")]
     {
-        macro_rules! probe {
-            ($feat:expr, $flag:expr) => {
-                if std::arch::is_aarch64_feature_detected!($feat) {
-                    features |= $flag;
-                }
-            };
+        // NEON / FP / ASIMD are mandatory on all AArch64 — set unconditionally.
+        features |= ArmFeatures::NEON | ArmFeatures::FP | ArmFeatures::ASIMD;
+
+        // On Apple Silicon (macOS aarch64), all M-series chips include AES, PMULL,
+        // SHA2, CRC32, and LSE atomics as baseline features — set unconditionally.
+        // On Linux, use runtime detection via the OS auxiliary vector.
+        #[cfg(target_os = "macos")]
+        {
+            features |= ArmFeatures::AES | ArmFeatures::PMULL | ArmFeatures::SHA2;
+            features |= ArmFeatures::CRC32 | ArmFeatures::ATOMICS;
         }
 
-        probe!("neon", ArmFeatures::NEON);
-        probe!("aes", ArmFeatures::AES);
-        probe!("pmull", ArmFeatures::PMULL);
-        probe!("sha2", ArmFeatures::SHA2);
-        probe!("crc", ArmFeatures::CRC32);
-        probe!("lse", ArmFeatures::ATOMICS);
-        probe!("fp", ArmFeatures::FP);
-        probe!("asimd", ArmFeatures::ASIMD);
+        #[cfg(target_os = "linux")]
+        {
+            macro_rules! probe {
+                ($feat:literal, $flag:expr) => {
+                    if std::arch::is_aarch64_feature_detected!($feat) {
+                        features |= $flag;
+                    }
+                };
+            }
+            probe!("aes", ArmFeatures::AES);
+            probe!("pmull", ArmFeatures::PMULL);
+            probe!("sha2", ArmFeatures::SHA2);
+            probe!("crc", ArmFeatures::CRC32);
+            probe!("lse", ArmFeatures::ATOMICS);
+        }
     }
 
-    Ok(features)
+    features
 }
 
 // ── Apple Silicon detection (macOS only) ─────────────────────────────────────
@@ -168,7 +179,7 @@ mod apple_silicon {
         let physical_cores = num_cpus::get_physical() as u32;
         let logical_cores = num_cpus::get() as u32;
 
-        let features = detect_arm_features().unwrap_or_default();
+        let features = detect_arm_features();
 
         Some(CpuInfo {
             vendor: Vendor::Apple,
