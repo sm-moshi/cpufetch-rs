@@ -27,6 +27,10 @@ steps:
       mount:
         - .cargo-cache
         - .rustup-cache
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
 
   - name: fmt
     image: rust:1-slim
@@ -36,6 +40,10 @@ steps:
     commands:
       - rustup toolchain install nightly --profile minimal --component rustfmt --no-self-update
       - cargo +nightly fmt --all --check
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
 
   - name: clippy
     image: rust:1-slim
@@ -45,6 +53,10 @@ steps:
     commands:
       - rustup toolchain install beta --profile minimal --component clippy --no-self-update
       - cargo +beta clippy --all-targets --all-features -- -D warnings
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
 
   - name: test
     image: rust:1-slim
@@ -54,6 +66,10 @@ steps:
     commands:
       - rustup toolchain install beta --profile minimal --no-self-update
       - cargo +beta test --all-features
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
 
   - name: docs
     image: rust:1-slim
@@ -63,6 +79,10 @@ steps:
       RUSTDOCFLAGS: "-D warnings"
     commands:
       - cargo +stable doc --no-deps --document-private-items --all-features
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
 
   - name: rebuild-cache
     failure: ignore
@@ -85,3 +105,7 @@ steps:
         - .rustup-cache
     when:
       - status: [success, failure]
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
