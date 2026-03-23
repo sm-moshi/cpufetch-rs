@@ -7,12 +7,10 @@ when:
 
 steps:
   - name: fmt
-    image: dhi.io/rust:1.94.0-debian13-dev
+    image: harbor.m0sh1.cc/apps/rust-ci:latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
     commands:
-      - rustup toolchain install nightly --profile minimal --component rustfmt --no-self-update
       - cargo +nightly fmt --all --check
     volumes:
       - woodpecker-pipeline-cache:/woodpecker/cache
@@ -22,10 +20,9 @@ steps:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: clippy
-    image: dhi.io/rust:1.94.0-debian13-dev
+    image: harbor.m0sh1.cc/apps/rust-ci:latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
       RUSTFLAGS: -D warnings
     commands:
       - cargo clippy --all-targets --all-features
@@ -37,10 +34,9 @@ steps:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: test
-    image: dhi.io/rust:1.94.0-debian13-dev
+    image: harbor.m0sh1.cc/apps/rust-ci:latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
     commands:
       - cargo test --all-features
     volumes:
@@ -51,10 +47,9 @@ steps:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: docs
-    image: dhi.io/rust:1.94.0-debian13-dev
+    image: harbor.m0sh1.cc/apps/rust-ci:latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
       RUSTDOCFLAGS: -D warnings
     commands:
       - cargo doc --no-deps --document-private-items --all-features
@@ -66,12 +61,10 @@ steps:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: audit
-    image: dhi.io/rust:1.94.0-debian13-dev
+    image: harbor.m0sh1.cc/apps/rust-ci:latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
     commands:
-      - cargo install cargo-audit --locked
       - cargo audit
     volumes:
       - woodpecker-pipeline-cache:/woodpecker/cache
@@ -81,12 +74,10 @@ steps:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: deny
-    image: dhi.io/rust:1.94.0-debian13-dev
+    image: harbor.m0sh1.cc/apps/rust-ci:latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
     commands:
-      - cargo install cargo-deny --locked
       - cargo deny check
     volumes:
       - woodpecker-pipeline-cache:/woodpecker/cache

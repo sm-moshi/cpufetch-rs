@@ -9,21 +9,20 @@ when:
 
 steps:
   - name: release-plz
-    image: dhi.io/rust:1.94.0-debian13-dev
+    image: harbor.m0sh1.cc/apps/rust-ci:latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       GITHUB_TOKEN:
         from_secret: github_token
     commands:
-      - apt-get update -o Acquire::ForceIPv4=true
-      - apt-get install -y --no-install-recommends git curl ca-certificates
       - curl -fsSL https://github.com/release-plz/release-plz/releases/latest/download/release-plz-x86_64-unknown-linux-musl.tar.gz -o /tmp/rp.tar.gz
-      - tar xzf /tmp/rp.tar.gz -C /usr/local/bin
-      - chmod +x /usr/local/bin/release-plz
+      - mkdir -p ./bin
+      - tar xzf /tmp/rp.tar.gz -C ./bin
+      - chmod +x ./bin/release-plz
       - git config --global user.email "ci@m0sh1.cc"
       - git config --global user.name "Woodpecker CI"
       - git remote set-url origin "https://$GITHUB_TOKEN@github.com/sm-moshi/cpufetch-rs.git"
-      - release-plz release --git-token "$GITHUB_TOKEN"
+      - ./bin/release-plz release --git-token "$GITHUB_TOKEN"
     volumes:
       - woodpecker-pipeline-cache:/woodpecker/cache
     backend_options:
