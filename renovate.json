@@ -15,7 +15,8 @@
   "enabledManagers": [
     "cargo",
     "github-actions",
-    "mise"
+    "mise",
+    "woodpecker"
   ],
   "lockFileMaintenance": {
     "enabled": true,

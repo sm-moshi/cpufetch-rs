@@ -1,0 +1,24 @@
+# cpufetch-rs — Auto version bump pipeline
+# Runs on every push to main. Uses release-plz to:
+#   1. Analyse conventional commits since the last version tag
+#   2. Bump Cargo.toml version accordingly
+#   3. Create a git tag (e.g. v0.1.0) — this triggers the release pipeline
+when:
+  - event: push
+    branch: main
+
+steps:
+  - name: release-plz
+    image: alpine:latest
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - apk add --no-cache git curl ca-certificates
+      - curl -fsSL https://github.com/release-plz/release-plz/releases/latest/download/release-plz-x86_64-unknown-linux-musl.tar.gz -o /tmp/rp.tar.gz
+      - tar xzf /tmp/rp.tar.gz -C /usr/local/bin
+      - chmod +x /usr/local/bin/release-plz
+      - git config --global user.email "ci@m0sh1.cc"
+      - git config --global user.name "Woodpecker CI"
+      - git remote set-url origin "https://$GITHUB_TOKEN@github.com/sm-moshi/cpufetch-rs.git"
+      - release-plz release --git-token "$GITHUB_TOKEN"

@@ -78,14 +78,17 @@ Trunk-based: `main` is the sole long-lived branch. Feature work via short-lived 
 
 ## CI
 
-**GitHub Actions** handles all CI/CD:
+**Woodpecker CI** (primary — GitHub forge):
 
-- **CI** (`ci.yml`): fmt, clippy, test (Linux + macOS), docs, MSRV check
-- **Security** (`security.yml`): cargo-audit + cargo-deny (on PR + weekly cron)
-- **Release-plz** (`release-plz.yml`): auto version bump + tag on main push
-- **Release** (`release.yml`): cross-platform builds on `v*` tags → GitHub Release + crates.io
+- **CI** (`ci.yaml`): fmt (nightly), clippy (stable), test, docs, cargo-audit, cargo-deny
+- **Release-plz** (`release-plz.yaml`): auto version bump + tag on main push
+- **Release** (`release.yaml`): Linux x86_64/aarch64/i686 builds, crates.io publish, GitHub Release
 
-Concurrency groups auto-cancel stale runs on rapid-fire commits.
+**GitHub Actions** (supplementary — dormant until billing resolved):
+
+- **CI** (`ci.yml`): same checks + macOS test matrix + MSRV check
+- **Security** (`security.yml`): cargo-audit + cargo-deny (weekly cron)
+- **Release** (`release.yml`): cross-platform builds (macOS, Windows, FreeBSD) on `v*` tags
 
 ## Dev Environment
 

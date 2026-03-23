@@ -1,0 +1,134 @@
+# cpufetch-rs — CI: format, lint, test, docs, security
+# Triggers on push to main and pull requests (GitHub forge).
+when:
+  - event: pull_request
+  - event: push
+    branch: main
+
+steps:
+  - name: restore-cache
+    failure: ignore
+    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
+    settings:
+      backend: s3
+      endpoint:
+        from_secret: garage_s3_endpoint
+      access-key:
+        from_secret: garage_s3_access_key
+      secret-key:
+        from_secret: garage_s3_secret_key
+      region: garage
+      bucket: buildkit-cache
+      path-style: true
+      restore: true
+      cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
+      mount:
+        - .cargo-cache
+        - .rustup-cache
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
+
+  - name: fmt
+    image: rust:1-slim
+    environment:
+      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+    commands:
+      - rustup toolchain install nightly --profile minimal --component rustfmt --no-self-update
+      - cargo +nightly fmt --all --check
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
+
+  - name: clippy
+    image: rust:1-slim
+    environment:
+      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      RUSTFLAGS: -D warnings
+    commands:
+      - cargo clippy --all-targets --all-features
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
+
+  - name: test
+    image: rust:1-slim
+    environment:
+      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+    commands:
+      - cargo test --all-features
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
+
+  - name: docs
+    image: rust:1-slim
+    environment:
+      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      RUSTDOCFLAGS: -D warnings
+    commands:
+      - cargo doc --no-deps --document-private-items --all-features
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
+
+  - name: audit
+    image: rust:1-slim
+    environment:
+      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+    commands:
+      - cargo install cargo-audit --locked
+      - cargo audit
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
+
+  - name: deny
+    image: rust:1-slim
+    environment:
+      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+    commands:
+      - cargo install cargo-deny --locked
+      - cargo deny check
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
+
+  - name: rebuild-cache
+    failure: ignore
+    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
+    settings:
+      backend: s3
+      endpoint:
+        from_secret: garage_s3_endpoint
+      access-key:
+        from_secret: garage_s3_access_key
+      secret-key:
+        from_secret: garage_s3_secret_key
+      region: garage
+      bucket: buildkit-cache
+      path-style: true
+      rebuild: true
+      cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
+      mount:
+        - .cargo-cache
+        - .rustup-cache
+    when:
+      - status: [success, failure]
+    backend_options:
+      kubernetes:
+        securityContext:
+          fsGroupChangePolicy: OnRootMismatch
