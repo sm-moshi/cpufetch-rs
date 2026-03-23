@@ -50,7 +50,7 @@ steps:
       - woodpecker-pipeline-cache:/woodpecker/cache
 
   - name: github-release
-    image: woodpeckerci/plugin-release@sha256:caf18bc34de626dff1de0cc0638ee8dff11af6c9372a5f3d79ab27b91a5ee4d9
+    image: woodpeckerci/plugin-release@sha256:284b6120fccc21067d6ae5280f4ecee276c294b8de9907c2d167c8884a4d1f25
     settings:
       api_key:
         from_secret: github_token
