@@ -4,18 +4,11 @@
     "config:best-practices",
     ":preserveSemverRanges"
   ],
-  "platformAutomerge": true,
-  "dependencyDashboard": true,
-  "dependencyDashboardAutoclose": true,
-  "timezone": "Europe/Berlin",
-  "schedule": ["at any time"],
-  "prHourlyLimit": 5,
-  "prConcurrentLimit": 3,
-  "labels": ["dependencies"],
   "enabledManagers": [
     "cargo",
     "github-actions",
     "mise",
+    "rust-toolchain",
     "woodpecker"
   ],
   "lockFileMaintenance": {
@@ -49,7 +42,6 @@
       "automerge": true
     },
     {
-      "description": "Label Rust dependency updates",
       "matchManagers": ["cargo"],
       "addLabels": ["rust"]
     }
