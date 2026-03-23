@@ -6,128 +6,90 @@ when:
     branch: main
 
 steps:
-  - name: restore-cache
-    failure: ignore
-    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
-    settings:
-      backend: s3
-      endpoint:
-        from_secret: garage_s3_endpoint
-      access-key:
-        from_secret: garage_s3_access_key
-      secret-key:
-        from_secret: garage_s3_secret_key
-      region: garage
-      bucket: buildkit-cache
-      path-style: true
-      restore: true
-      cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
-      mount:
-        - .cargo-cache
-        - .rustup-cache
-    backend_options:
-      kubernetes:
-        securityContext:
-          fsGroupChangePolicy: OnRootMismatch
-
   - name: fmt
-    image: rust:1-slim
+    image: dhi.io/rust:1.94.0-debian13-dev
     environment:
-      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
-      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
     commands:
       - rustup toolchain install nightly --profile minimal --component rustfmt --no-self-update
       - cargo +nightly fmt --all --check
+    volumes:
+      - woodpecker-pipeline-cache:/woodpecker/cache
     backend_options:
       kubernetes:
         securityContext:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: clippy
-    image: rust:1-slim
+    image: dhi.io/rust:1.94.0-debian13-dev
     environment:
-      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
-      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
       RUSTFLAGS: -D warnings
     commands:
       - cargo clippy --all-targets --all-features
+    volumes:
+      - woodpecker-pipeline-cache:/woodpecker/cache
     backend_options:
       kubernetes:
         securityContext:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: test
-    image: rust:1-slim
+    image: dhi.io/rust:1.94.0-debian13-dev
     environment:
-      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
-      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
     commands:
       - cargo test --all-features
+    volumes:
+      - woodpecker-pipeline-cache:/woodpecker/cache
     backend_options:
       kubernetes:
         securityContext:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: docs
-    image: rust:1-slim
+    image: dhi.io/rust:1.94.0-debian13-dev
     environment:
-      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
-      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
       RUSTDOCFLAGS: -D warnings
     commands:
       - cargo doc --no-deps --document-private-items --all-features
+    volumes:
+      - woodpecker-pipeline-cache:/woodpecker/cache
     backend_options:
       kubernetes:
         securityContext:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: audit
-    image: rust:1-slim
+    image: dhi.io/rust:1.94.0-debian13-dev
     environment:
-      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
-      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
     commands:
       - cargo install cargo-audit --locked
       - cargo audit
+    volumes:
+      - woodpecker-pipeline-cache:/woodpecker/cache
     backend_options:
       kubernetes:
         securityContext:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: deny
-    image: rust:1-slim
+    image: dhi.io/rust:1.94.0-debian13-dev
     environment:
-      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
-      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
     commands:
       - cargo install cargo-deny --locked
       - cargo deny check
-    backend_options:
-      kubernetes:
-        securityContext:
-          fsGroupChangePolicy: OnRootMismatch
-
-  - name: rebuild-cache
-    failure: ignore
-    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
-    settings:
-      backend: s3
-      endpoint:
-        from_secret: garage_s3_endpoint
-      access-key:
-        from_secret: garage_s3_access_key
-      secret-key:
-        from_secret: garage_s3_secret_key
-      region: garage
-      bucket: buildkit-cache
-      path-style: true
-      rebuild: true
-      cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
-      mount:
-        - .cargo-cache
-        - .rustup-cache
-    when:
-      - status: [success, failure]
+    volumes:
+      - woodpecker-pipeline-cache:/woodpecker/cache
     backend_options:
       kubernetes:
         securityContext:

@@ -8,33 +8,10 @@ when:
     branch: main
 
 steps:
-  - name: restore-cache
-    failure: ignore
-    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
-    settings:
-      backend: s3
-      endpoint:
-        from_secret: garage_s3_endpoint
-      access-key:
-        from_secret: garage_s3_access_key
-      secret-key:
-        from_secret: garage_s3_secret_key
-      region: garage
-      bucket: buildkit-cache
-      path-style: true
-      restore: true
-      cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
-      mount:
-        - .cargo-cache
-    backend_options:
-      kubernetes:
-        securityContext:
-          fsGroupChangePolicy: OnRootMismatch
-
   - name: release-plz
-    image: rust:1-slim
+    image: dhi.io/rust:1.94.0-debian13-dev
     environment:
-      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
+      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       GITHUB_TOKEN:
         from_secret: github_token
     commands:
@@ -47,31 +24,8 @@ steps:
       - git config --global user.name "Woodpecker CI"
       - git remote set-url origin "https://$GITHUB_TOKEN@github.com/sm-moshi/cpufetch-rs.git"
       - release-plz release --git-token "$GITHUB_TOKEN"
-    backend_options:
-      kubernetes:
-        securityContext:
-          fsGroupChangePolicy: OnRootMismatch
-
-  - name: rebuild-cache
-    failure: ignore
-    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
-    settings:
-      backend: s3
-      endpoint:
-        from_secret: garage_s3_endpoint
-      access-key:
-        from_secret: garage_s3_access_key
-      secret-key:
-        from_secret: garage_s3_secret_key
-      region: garage
-      bucket: buildkit-cache
-      path-style: true
-      rebuild: true
-      cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
-      mount:
-        - .cargo-cache
-    when:
-      - status: [success, failure]
+    volumes:
+      - woodpecker-pipeline-cache:/woodpecker/cache
     backend_options:
       kubernetes:
         securityContext:

@@ -1,5 +1,5 @@
 # cpufetch-rs — Release pipeline
-# Builds Linux binaries and creates a GitHub release.
+# Builds Linux binaries, publishes to crates.io, creates a GitHub release.
 # Triggers on version tags (v*).
 #
 # Platform coverage (Linux-only — Woodpecker agents are x86_64 Linux):
@@ -14,43 +14,25 @@ when:
     ref: refs/tags/v*
 
 steps:
-  - name: restore-cache
-    failure: ignore
-    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
-    settings:
-      backend: s3
-      endpoint:
-        from_secret: garage_s3_endpoint
-      access-key:
-        from_secret: garage_s3_access_key
-      secret-key:
-        from_secret: garage_s3_secret_key
-      region: garage
-      bucket: buildkit-cache
-      path-style: true
-      restore: true
-      cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
-      mount:
-        - .cargo-cache
-        - .rustup-cache
-
   - name: build-linux-x86_64
-    image: rust:1-slim
+    image: dhi.io/rust:1.94.0-debian13-dev
     environment:
-      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
-      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
     commands:
       - cargo build --release --locked
       - mkdir -p dist
       - cp target/release/cpufetch dist/cpufetch-linux-x86_64
       - tar czvf "dist/cpufetch-$CI_COMMIT_TAG-linux-x86_64.tar.gz" -C dist cpufetch-linux-x86_64
       - sha256sum "dist/cpufetch-$CI_COMMIT_TAG-linux-x86_64.tar.gz" > "dist/cpufetch-$CI_COMMIT_TAG-linux-x86_64.sha256"
+    volumes:
+      - woodpecker-pipeline-cache:/woodpecker/cache
 
   - name: build-linux-aarch64
-    image: rust:1-slim
+    image: dhi.io/rust:1.94.0-debian13-dev
     environment:
-      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
-      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
       CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
     commands:
       - apt-get update -o Acquire::ForceIPv4=true
@@ -60,12 +42,14 @@ steps:
       - cp target/aarch64-unknown-linux-gnu/release/cpufetch dist/cpufetch-linux-aarch64
       - tar czvf "dist/cpufetch-$CI_COMMIT_TAG-linux-aarch64.tar.gz" -C dist cpufetch-linux-aarch64
       - sha256sum "dist/cpufetch-$CI_COMMIT_TAG-linux-aarch64.tar.gz" > "dist/cpufetch-$CI_COMMIT_TAG-linux-aarch64.sha256"
+    volumes:
+      - woodpecker-pipeline-cache:/woodpecker/cache
 
   - name: build-linux-i686
-    image: rust:1-slim
+    image: dhi.io/rust:1.94.0-debian13-dev
     environment:
-      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
-      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
     commands:
       - apt-get update -o Acquire::ForceIPv4=true
       - apt-get install -y --no-install-recommends gcc-multilib
@@ -74,16 +58,20 @@ steps:
       - cp target/i686-unknown-linux-gnu/release/cpufetch dist/cpufetch-linux-i686
       - tar czvf "dist/cpufetch-$CI_COMMIT_TAG-linux-i686.tar.gz" -C dist cpufetch-linux-i686
       - sha256sum "dist/cpufetch-$CI_COMMIT_TAG-linux-i686.tar.gz" > "dist/cpufetch-$CI_COMMIT_TAG-linux-i686.sha256"
+    volumes:
+      - woodpecker-pipeline-cache:/woodpecker/cache
 
   - name: publish-crates
-    image: rust:1-slim
+    image: dhi.io/rust:1.94.0-debian13-dev
     environment:
-      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
-      RUSTUP_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.rustup-cache
+      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
       CARGO_REGISTRY_TOKEN:
         from_secret: cargo_registry_token
     commands:
       - cargo publish --locked
+    volumes:
+      - woodpecker-pipeline-cache:/woodpecker/cache
 
   - name: github-release
     image: woodpeckerci/plugin-release@sha256:caf18bc34de626dff1de0cc0638ee8dff11af6c9372a5f3d79ab27b91a5ee4d9
@@ -95,25 +83,3 @@ steps:
       files:
         - dist/*.tar.gz
         - dist/*.sha256
-
-  - name: rebuild-cache
-    failure: ignore
-    image: plugins/cache:1.10@sha256:bfcd289fbea93d4cd2baa0a9f2157a418ce692cd77f1bf21d6a23f13d3df4e2d
-    settings:
-      backend: s3
-      endpoint:
-        from_secret: garage_s3_endpoint
-      access-key:
-        from_secret: garage_s3_access_key
-      secret-key:
-        from_secret: garage_s3_secret_key
-      region: garage
-      bucket: buildkit-cache
-      path-style: true
-      rebuild: true
-      cache_key: "cpufetch-rs-{{ checksum \"Cargo.lock\" }}"
-      mount:
-        - .cargo-cache
-        - .rustup-cache
-    when:
-      - status: [success, failure]
