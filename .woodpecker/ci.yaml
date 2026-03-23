@@ -7,7 +7,7 @@ when:
 
 steps:
   - name: fmt
-    image: harbor.m0sh1.cc/apps/rust-ci:latest
+    image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
     commands:
@@ -20,7 +20,7 @@ steps:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: clippy
-    image: harbor.m0sh1.cc/apps/rust-ci:latest
+    image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       RUSTFLAGS: -D warnings
@@ -34,7 +34,7 @@ steps:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: test
-    image: harbor.m0sh1.cc/apps/rust-ci:latest
+    image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
     commands:
@@ -47,7 +47,7 @@ steps:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: docs
-    image: harbor.m0sh1.cc/apps/rust-ci:latest
+    image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       RUSTDOCFLAGS: -D warnings
@@ -61,7 +61,7 @@ steps:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: audit
-    image: harbor.m0sh1.cc/apps/rust-ci:latest
+    image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
     commands:
@@ -74,7 +74,7 @@ steps:
           fsGroupChangePolicy: OnRootMismatch
 
   - name: deny
-    image: harbor.m0sh1.cc/apps/rust-ci:latest
+    image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
     commands:

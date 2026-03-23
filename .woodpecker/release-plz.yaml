@@ -9,7 +9,7 @@ when:
 
 steps:
   - name: release-plz
-    image: harbor.m0sh1.cc/apps/rust-ci:latest
+    image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       GITHUB_TOKEN:
