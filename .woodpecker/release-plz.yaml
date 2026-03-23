@@ -9,12 +9,14 @@ when:
 
 steps:
   - name: release-plz
-    image: alpine:latest
+    image: rust:1-slim
     environment:
+      CARGO_HOME: /woodpecker/src/github.com/sm-moshi/cpufetch-rs/.cargo-cache
       GITHUB_TOKEN:
         from_secret: github_token
     commands:
-      - apk add --no-cache git curl ca-certificates
+      - apt-get update -o Acquire::ForceIPv4=true
+      - apt-get install -y --no-install-recommends git curl ca-certificates
       - curl -fsSL https://github.com/release-plz/release-plz/releases/latest/download/release-plz-x86_64-unknown-linux-musl.tar.gz -o /tmp/rp.tar.gz
       - tar xzf /tmp/rp.tar.gz -C /usr/local/bin
       - chmod +x /usr/local/bin/release-plz
