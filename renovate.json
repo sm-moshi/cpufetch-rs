@@ -8,7 +8,6 @@
     "cargo",
     "github-actions",
     "mise",
-    "rust-toolchain",
     "woodpecker"
   ],
   "lockFileMaintenance": {
