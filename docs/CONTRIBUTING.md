@@ -1,6 +1,6 @@
-# Contribution guidelines
+# Contributing to cpufetch-rs
 
-First off, thank you for considering contributing to cpufetch-rs.
+Thank you for considering contributing!
 
 If your contribution is not straightforward, please first discuss the change you
 wish to make by creating a new issue before making the change.
@@ -9,72 +9,89 @@ wish to make by creating a new issue before making the change.
 
 Before reporting an issue on the
 [issue tracker](https://github.com/sm-moshi/cpufetch-rs/issues),
-please check that it has not already been reported by searching for some related
-keywords.
+please check that it has not already been reported by searching for related keywords.
 
 ## Pull requests
 
 Try to do one pull request per change.
 
-### Updating the changelog
+### Commit messages
 
-Update the changes you have made in
-[CHANGELOG](https://github.com/sm-moshi/cpufetch-rs/blob/main/docs/CHANGELOG.md)
-file under the **Unreleased** section.
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for
+automated version bumps and changelog generation.
 
-Add the changes of your pull request to one of the following subsections,
-depending on the types of changes defined by
-[Keep a changelog](https://keepachangelog.com/en/1.0.0/):
+Format: `type(scope): description`
 
-- `Added` for new features.
-- `Changed` for changes in existing functionality.
-- `Deprecated` for soon-to-be removed features.
-- `Removed` for now removed features.
-- `Fixed` for any bug fixes.
-- `Security` in case of vulnerabilities.
+Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `ci`, `chore`, `perf`
 
-If the required subsection does not exist yet under **Unreleased**, create it!
+Examples:
 
-## Developing
+- `feat(cli): add --verbose flag`
+- `fix(aarch64): correct Apple M4 microarchitecture detection`
+- `docs: update README platform support table`
 
-### Set up
+## Setting up the development environment
 
-This is no different than other Rust projects.
-
-```shell
+```bash
 git clone https://github.com/sm-moshi/cpufetch-rs
 cd cpufetch-rs
-cargo test
+
+# Install dev tools (cargo-nextest, cargo-audit, cargo-deny, etc.)
+mise install
+
+# Install nightly rustfmt (CI uses nightly for formatting)
+rustup toolchain install nightly --component rustfmt
 ```
 
-### Useful Commands
+## Useful commands
 
-- Build and run release version:
+```bash
+# Run all tests
+mise run test
 
-  ```shell
-  cargo build --release && cargo run --release
-  ```
+# Clippy (pedantic, warnings as errors)
+mise run lint
 
-- Run Clippy:
+# Format check (nightly rustfmt)
+mise run fmt
 
-  ```shell
-  cargo clippy --all-targets --all-features --workspace
-  ```
+# Auto-format
+mise run fmt:fix
 
-- Run all tests:
+# Security audit
+mise run audit
 
-  ```shell
-  cargo test --all-features --workspace
-  ```
+# Build docs with warnings as errors
+mise run docs
+```
 
-- Check to see if there are code formatting issues
+Or use raw `cargo` commands:
 
-  ```shell
-  cargo fmt --all -- --check
-  ```
+```bash
+cargo test --all-features
+cargo clippy --all-targets --all-features -- -D warnings
+cargo +nightly fmt --all --check
+cargo +nightly fmt --all
+RUSTDOCFLAGS="-D warnings" cargo doc --no-deps --all-features
+```
 
-- Format the code in the project
+## CI checks
 
-  ```shell
-  cargo fmt --all
-  ```
+Every PR is validated by GitHub Actions:
+
+- **rustfmt** — nightly, `cargo fmt --all --check`
+- **clippy** — stable, pedantic, warnings as errors
+- **test** — Linux + macOS matrix
+- **docs** — `cargo doc` with `-D warnings`
+- **MSRV** — builds with Rust 1.85.0
+- **security** — cargo-audit + cargo-deny
+
+All checks must pass before merging.
+
+## Code conventions
+
+- **No unsafe code** — forbidden via `[lints.rust]` in `Cargo.toml`
+- **Feature-gate new deps** — `optional = true` + feature flag
+- **British English** in all prose and documentation
+- **Doc comments** on all public items
+- See [AGENTS.md](../AGENTS.md) for the full policy

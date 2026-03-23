@@ -32,3 +32,18 @@ cpufetch-rs.code-workspace
 
 # Upstream C library — used locally only, not tracked in repo
 cpufetch-c/
+
+# Claude Code
+.claude/worktrees/
+
+# Coverage
+*.profraw
+*.profdata
+lcov.info
+coverage/
+
+# Agents (use .claude/ instead)
+.agents/
+
+# Mise
+.mise.local.toml

@@ -1,0 +1,37 @@
+[tools]
+"cargo:cargo-nextest" = "latest"
+"cargo:cargo-audit" = "latest"
+"cargo:cargo-deny" = "latest"
+"cargo:cargo-udeps" = "latest"
+
+[tasks.test]
+description = "Run tests via nextest"
+run = "cargo nextest run --all-features"
+
+[tasks.lint]
+description = "Run clippy with pedantic warnings as errors"
+run = "cargo clippy --all-targets --all-features -- -D warnings"
+
+[tasks.fmt]
+description = "Format check with nightly rustfmt"
+run = "cargo +nightly fmt --all --check"
+
+[tasks."fmt:fix"]
+description = "Auto-format with nightly rustfmt"
+run = "cargo +nightly fmt --all"
+
+[tasks.audit]
+description = "Run cargo-audit for known vulnerabilities"
+run = "cargo audit"
+
+[tasks.deny]
+description = "Run cargo-deny for licence and advisory checks"
+run = "cargo deny check"
+
+[tasks.docs]
+description = "Build docs with warnings as errors"
+run = "RUSTDOCFLAGS='-D warnings' cargo doc --no-deps --all-features"
+
+[tasks.udeps]
+description = "Check for unused dependencies (requires nightly)"
+run = "cargo +nightly udeps --all-targets --all-features"

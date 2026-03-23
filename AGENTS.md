@@ -1,82 +1,111 @@
-# AGENTS.md
+# AGENTS — Repository Enforcement Contract
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+This file is the **authoritative policy** for all automation touching this repo
+(CI, bots, and AI coding agents). Violations are defects.
 
-## Project
+## 1) Scope
 
-Rust rewrite of cpufetch — a cross-platform CLI tool and library for fetching detailed CPU information (vendor, model, cores, cache, frequency, feature flags). Supports x86_64 and aarch64 architectures with platform-specific backends for Linux, macOS, and Windows.
+Repository type: **Public Rust CLI and library crate**.
 
-- **Binary**: `cpufetch` (via `src/main.rs`)
-- **Library crate**: `cpufetch_rs` (via `src/lib.rs`)
-- **Edition**: 2024
-- **Status**: Early development (v0.0.1)
+- Binary: `cpufetch` — cross-platform CPU information tool
+- Library: `cpufetch_rs` — reusable CPU detection library
+- Upstream reference: [Dr-Noob/cpufetch](https://github.com/Dr-Noob/cpufetch)
 
-## Commands
+Core principles:
 
-```bash
-cargo build                          # build (default features = full)
-cargo build --no-default-features    # minimal build (core CPU detection only)
-cargo build --features cli,json      # selective features
-cargo test --all-features            # run all tests
-cargo test --test cpu_detect         # single test file
-cargo +nightly fmt --all --check     # format check (CI uses nightly rustfmt)
-cargo +nightly fmt --all             # auto-format
-cargo +beta clippy --all-targets --all-features -- -D warnings  # lint (CI uses beta clippy)
-RUSTDOCFLAGS="-D warnings" cargo doc --no-deps --all-features   # build docs
-```
+- Idiomatic, safe Rust
+- Feature-gated optional dependencies
+- Cross-platform (x86_64 + aarch64, Linux/macOS/Windows/FreeBSD)
+- Conventional commits for automated releases
 
-## Feature Flags
+## 2) Hard Rules
 
-Dependencies are extensively feature-gated. `default = ["full"]` enables everything.
+### 2.1 No unsafe code
 
-| Feature | What it enables | Key deps |
-|---------|----------------|----------|
-| `cli` | Command-line argument parsing | clap, anyhow |
-| `display` | Coloured terminal output, ASCII art | colored, crossterm, textwrap, regex |
-| `frequency` | CPU frequency detection | sysinfo, sys-info, platforms |
-| `json` | JSON output | serde_json |
-| `config` | TOML config file | toml |
-| `linux` / `windows` / `macos` | Platform-specific backends | procfs / windows+wmi / sysctl |
+`unsafe` is **forbidden** via `[lints.rust]` in `Cargo.toml`.
 
-When adding new dependencies, make them `optional = true` and gate behind a feature unless they're core CPU detection.
+If a future change requires `unsafe`:
 
-## Architecture
+- Add a `// SAFETY:` comment documenting invariants
+- Open a tracking issue explaining why safe alternatives are insufficient
+- Require explicit human approval before merging
 
-The crate is split into a library (`lib.rs`) and a binary (`main.rs`). The binary has three `#[cfg]`-gated code paths depending on which features are enabled (no-cli, cli+display, cli-only).
+### 2.2 Feature-gated dependencies
 
-**Core flow**: `arch::*::detect()` → `CpuInfo` struct → `printer::*` output
+New dependencies MUST be `optional = true` and gated behind a feature in `Cargo.toml`
+unless they are core CPU detection (always compiled).
 
-- `cpu/info.rs` — Central `CpuInfo`, `Vendor`, `Frequency`, `Version` types (always compiled)
-- `cpu/flags.rs` — CPU feature flag detection via `bitflags`
-- `cpu/frequency.rs` — Frequency detection (feature-gated)
-- `arch/x86_64/` — CPUID-based detection via `raw-cpuid`
-- `arch/aarch64/` — ARM detection via platform-specific syscalls
-- `printer/` — ASCII art rendering, layout, JSON output (feature-gated)
-- `cli/` — Clap argument parsing (feature-gated)
-- `error.rs` — `thiserror`-based error enum with feature-gated variants
+Do not add non-optional dependencies without explicit justification.
 
-## Code Conventions
+### 2.3 Lints live in Cargo.toml
 
-- **Synchronous only** — no async, no concurrency
-- **No unsafe** unless documented with `// SAFETY:` comment
-- **Error handling**: `thiserror` for library errors, `anyhow` for CLI (optional)
-- **Clippy**: pedantic level enabled globally via `.cargo/config.toml` (`clippy::all` + `clippy::pedantic`). Allowed: `module_name_repetitions`, `too_many_lines`
-- **Formatting**: rustfmt with edition 2024, 120 char max width, Unix newlines
-- **Documentation language**: British English
-- **Doc comments**: required on public items, prefer "why-first" style
+All clippy and rustc lint configuration lives in the `[lints]` section of `Cargo.toml`.
+Do not use `.cargo/config.toml` for lint flags.
 
-## Git Workflow
+### 2.4 No breaking public API changes without label
 
-Trunk-based: `main` is the sole branch. Feature work via short-lived branches + PRs.
+Changes that break the public API of `cpufetch_rs` (the library crate) must be tagged
+with the `breaking` label and follow semver.
 
-- Commit format: `🦀 type(scope): description` (emoji prefix required)
+### 2.5 Conventional commits
 
-## CI
+Format: `type(scope): description`
 
-GitHub Actions on push to `main`/`develop` and PRs:
-- **test**: `cargo +beta test --all-features`
-- **rustfmt**: `cargo +nightly fmt --all --check`
-- **clippy**: `cargo +beta clippy --all-targets --all-features -- -D warnings`
-- **docs**: `cargo doc` with `-D warnings`
+Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `ci`, `chore`, `perf`
 
-CD pipeline triggers on version tags (`v*`), builds multi-platform binaries (macOS x86_64/arm64, Linux x86_64/arm64/i686, Windows x86_64) using `cross`, publishes to GitHub Releases and crates.io.
+No emoji prefixes. release-plz parses these for automated version bumps.
+
+### 2.6 British English
+
+All prose — doc comments, commit messages, documentation — uses British English
+(e.g. colour, behaviour, organisation).
+
+### 2.7 Documentation
+
+All public items must have doc comments. Prefer "why-first" style.
+
+## 3) CI Contract
+
+GitHub Actions enforces the following on every push to `main` and every PR:
+
+| Check | Toolchain | Command | Failure = block |
+|-------|-----------|---------|----------------|
+| Format | nightly | `cargo fmt --all --check` | Yes |
+| Clippy | stable | `cargo clippy --all-targets --all-features` | Yes |
+| Test | stable | `cargo test --all-features` | Yes |
+| Docs | stable | `cargo doc --no-deps --all-features` (`-D warnings`) | Yes |
+| MSRV | 1.85.0 | `cargo check --all-features` | Yes |
+| Audit | — | `cargo-audit` + `cargo-deny` | Yes |
+
+## 4) Decision Authority
+
+- `Cargo.toml` is the source of truth for dependencies, features, and lints
+- `rust-toolchain.toml` pins the default toolchain channel
+- `deny.toml` governs licence and advisory policy
+- `release-plz.toml` controls release automation
+
+## 5) Release Flow
+
+1. Conventional commits land on `main`
+2. `release-plz` (GHA) analyses commits, bumps `Cargo.toml` version, creates `v*` tag
+3. Tag push triggers the Release workflow: cross-platform builds + GitHub Release + crates.io publish
+4. Agents must not create tags manually
+
+## 6) Agent Constraints
+
+Agents MUST:
+
+- Propose changes as diffs
+- Run `cargo clippy` and `cargo test` before considering work done
+- Verify assumptions before implementation
+- Avoid speculative refactors
+
+Agents MUST NOT:
+
+- Silence failing checks or suppress clippy lints without justification
+- Add `unsafe` code
+- Create version tags or publish to crates.io
+- Add non-optional dependencies without feature gating
+
+If an agent cannot comply, it must fail loudly and request human intervention.
+Silent policy bypass is forbidden.

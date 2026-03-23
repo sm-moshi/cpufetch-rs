@@ -22,5 +22,25 @@
         ]
       }
     ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(cargo:*)",
+      "Bash(rustup:*)",
+      "Bash(mise:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "mcp__claude_ai_Context7__resolve-library-id",
+      "mcp__claude_ai_Context7__query-docs",
+      "mcp__basic-memory__search_notes",
+      "mcp__basic-memory__write_note",
+      "mcp__basic-memory__read_note",
+      "mcp__basic-memory__list_directory",
+      "mcp__plugin_github_github__issue_read",
+      "mcp__plugin_github_github__pull_request_read",
+      "mcp__plugin_github_github__list_commits"
+    ]
   }
 }

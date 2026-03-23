@@ -1,11 +1,9 @@
 [workspace]
-# Push version bump commits directly to main (no intermediate PR branch needed
-# when Woodpecker is the only writer). Set to true if you want PRs instead.
-git_release_enable = false
+git_release_enable = true
 git_tag_enable     = true
+changelog_path     = "CHANGELOG.md"
 
 [[package]]
 name = "cpufetch-rs"
-# Publish to crates.io is handled by the Woodpecker release pipeline on tag push;
-# release-plz should only bump the version and create the git tag.
+# crates.io publishing handled by GHA release-plz action
 publish = false

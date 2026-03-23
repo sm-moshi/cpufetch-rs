@@ -4,24 +4,53 @@
     "config:best-practices",
     ":preserveSemverRanges"
   ],
+  "platformAutomerge": true,
+  "dependencyDashboard": true,
+  "dependencyDashboardAutoclose": true,
+  "timezone": "Europe/Berlin",
+  "schedule": ["at any time"],
+  "prHourlyLimit": 5,
+  "prConcurrentLimit": 3,
+  "labels": ["dependencies"],
   "enabledManagers": [
     "cargo",
-    "woodpecker"
+    "github-actions",
+    "mise"
   ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "groupName": "lock file maintenance",
+    "schedule": ["before 6am on monday"]
+  },
   "packageRules": [
     {
+      "description": "Auto-merge patch updates",
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+    {
+      "description": "Auto-merge minor updates for dev-dependencies",
+      "matchDepTypes": ["dev-dependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "description": "Group all GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "addLabels": ["ci"],
+      "automerge": true
+    },
+    {
+      "description": "Group mise tool updates",
+      "matchManagers": ["mise"],
+      "groupName": "mise tools",
+      "automerge": true
+    },
+    {
+      "description": "Label Rust dependency updates",
       "matchManagers": ["cargo"],
       "addLabels": ["rust"]
-    },
-    {
-      "matchManagers": ["woodpecker"],
-      "addLabels": ["docker"]
-    },
-    {
-      "description": "Auto-merge patch and minor Cargo updates — CI-verified",
-      "matchManagers": ["cargo"],
-      "matchUpdateTypes": ["patch", "minor"],
-      "automerge": true
     }
   ]
 }
