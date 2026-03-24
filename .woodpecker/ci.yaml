@@ -9,62 +9,43 @@ steps:
   - name: fmt
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
-      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       RUSTUP_HOME: /home/ci/.rustup
     commands:
-      - rm -rf /woodpecker/cache/cpufetch-rs/cargo/registry /woodpecker/cache/cpufetch-rs/cargo/.package-cache
       - cargo +nightly fmt --all --check
-    volumes:
-      - woodpecker-pipeline-cache:/woodpecker/cache
 
   - name: clippy
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
-      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       RUSTUP_HOME: /home/ci/.rustup
       RUSTFLAGS: -D warnings
     commands:
       - cargo clippy --all-targets --all-features
-    volumes:
-      - woodpecker-pipeline-cache:/woodpecker/cache
 
   - name: test
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
-      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo test --all-features
-    volumes:
-      - woodpecker-pipeline-cache:/woodpecker/cache
 
   - name: docs
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
-      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       RUSTUP_HOME: /home/ci/.rustup
       RUSTDOCFLAGS: -D warnings
     commands:
       - cargo doc --no-deps --document-private-items --all-features
-    volumes:
-      - woodpecker-pipeline-cache:/woodpecker/cache
 
   - name: audit
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
-      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo audit
-    volumes:
-      - woodpecker-pipeline-cache:/woodpecker/cache
 
   - name: deny
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
-      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo deny check
-    volumes:
-      - woodpecker-pipeline-cache:/woodpecker/cache
