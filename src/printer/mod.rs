@@ -70,56 +70,61 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
         info_lines.push(layout::format_kv("Hypervisor", &hv.yellow().to_string(), LABEL_WIDTH));
     }
 
-    info_lines.push(layout::format_kv(
-        "Cores",
-        &format!(
+    // ── Cores (with P/E breakdown for hybrid CPUs) ─────────────────────────
+    let cores_str = match (cpu_info.p_cores, cpu_info.e_cores) {
+        (Some(p), Some(e)) if p > 0 && e > 0 => {
+            format!(
+                "{}P + {}E ({} total), {} logical",
+                p, e, cpu_info.physical_cores, cpu_info.logical_cores
+            )
+        },
+        _ => format!(
             "{} physical, {} logical",
             cpu_info.physical_cores, cpu_info.logical_cores
-        )
-        .green()
-        .to_string(),
-        LABEL_WIDTH,
-    ));
+        ),
+    };
+    info_lines.push(layout::format_kv("Cores", &cores_str.green().to_string(), LABEL_WIDTH));
 
-    // ── Frequency ───────────────────────────────────────────────────────────
-    let has_freq =
-        cpu_info.frequency.base.is_some() || cpu_info.frequency.max.is_some() || cpu_info.frequency.current.is_some();
-
-    if args.frequency || has_freq {
-        if let Some(base) = cpu_info.frequency.base {
-            info_lines.push(layout::format_kv(
-                "Base Frequency",
-                &format!("{base:.0} MHz").green().to_string(),
-                LABEL_WIDTH,
-            ));
-        }
-        if let Some(max) = cpu_info.frequency.max {
-            info_lines.push(layout::format_kv(
-                "Max Frequency",
-                &format!("{max:.0} MHz").green().to_string(),
-                LABEL_WIDTH,
-            ));
-        }
+    // ── Frequency (always shown when data is available) ─────────────────────
+    if let Some(max) = cpu_info.frequency.max {
+        let label = if cpu_info.frequency.base.is_some() {
+            "Max Frequency"
+        } else {
+            "Frequency"
+        };
+        info_lines.push(layout::format_kv(
+            label,
+            &format!("{:.3} GHz", max / 1000.0).green().to_string(),
+            LABEL_WIDTH,
+        ));
+    }
+    if let Some(base) = cpu_info.frequency.base {
+        info_lines.push(layout::format_kv(
+            "Base Frequency",
+            &format!("{:.3} GHz", base / 1000.0).green().to_string(),
+            LABEL_WIDTH,
+        ));
+    }
+    if args.frequency {
         if let Some(cur) = cpu_info.frequency.current {
             info_lines.push(layout::format_kv(
                 "Current Frequency",
-                &format!("{cur:.0} MHz").green().to_string(),
+                &format!("{:.3} GHz", cur / 1000.0).green().to_string(),
                 LABEL_WIDTH,
             ));
         }
     }
 
-    // ── Cache ───────────────────────────────────────────────────────────────
-    if args.cache {
-        let cache_labels = ["L1i Cache", "L1d Cache", "L2 Cache", "L3 Cache"];
-        for (label, size) in cache_labels.iter().zip(cpu_info.cache_sizes.iter()) {
-            if let Some(kb) = size {
-                info_lines.push(layout::format_kv(
-                    label,
-                    &format!("{kb} KB").green().to_string(),
-                    LABEL_WIDTH,
-                ));
-            }
+    // ── Cache (always shown when data is available) ──────────────────────
+    let cache_labels = ["L1i Cache", "L1d Cache", "L2 Cache", "L3 Cache"];
+    for (label, size) in cache_labels.iter().zip(cpu_info.cache_sizes.iter()) {
+        if let Some(kb) = size {
+            let display = if *kb >= 1024 {
+                format!("{} MB", kb / 1024)
+            } else {
+                format!("{kb} KB")
+            };
+            info_lines.push(layout::format_kv(label, &display.green().to_string(), LABEL_WIDTH));
         }
     }
 

@@ -79,6 +79,8 @@ pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
         microarch,
         hypervisor,
         peak_flops,
+        p_cores: None,
+        e_cores: None,
     })
 }
 

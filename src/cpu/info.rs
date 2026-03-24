@@ -110,6 +110,12 @@ pub struct CpuInfo {
     /// Theoretical peak double-precision performance in GFLOP/s
     #[serde(skip_serializing_if = "Option::is_none")]
     pub peak_flops: Option<f64>,
+    /// Performance core count (for hybrid architectures like Apple Silicon, Alder Lake)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub p_cores: Option<u32>,
+    /// Efficiency core count (for hybrid architectures)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub e_cores: Option<u32>,
 }
 
 impl CpuInfo {
@@ -162,6 +168,8 @@ impl Default for CpuInfo {
             microarch: None,
             hypervisor: None,
             peak_flops: None,
+            p_cores: None,
+            e_cores: None,
         }
     }
 }

@@ -72,6 +72,8 @@ mod printer_tests {
             microarch: None,
             hypervisor: None,
             peak_flops: None,
+            p_cores: None,
+            e_cores: None,
         }
     }
 

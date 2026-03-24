@@ -36,6 +36,8 @@ pub fn detect_cpu() -> Result<CpuInfo, CpuError> {
         microarch: None,
         hypervisor: None,
         peak_flops: None,
+        p_cores: None,
+        e_cores: None,
     })
 }
 
@@ -58,20 +60,34 @@ fn detect_arm_features() -> ArmFeatures {
             features |= ArmFeatures::CRC32 | ArmFeatures::ATOMICS;
         }
 
+        // On Linux, parse /proc/cpuinfo "Features" line for runtime detection.
+        // This is more portable than std::arch::is_aarch64_feature_detected!(),
+        // which fails to compile with some cross-compilation toolchains.
         #[cfg(target_os = "linux")]
-        {
-            macro_rules! probe {
-                ($feat:literal, $flag:expr) => {
-                    if std::arch::is_aarch64_feature_detected!($feat) {
-                        features |= $flag;
-                    }
-                };
+        if let Ok(cpuinfo) = std::fs::read_to_string("/proc/cpuinfo") {
+            if let Some(feat_line) = cpuinfo
+                .lines()
+                .find(|l| l.starts_with("Features"))
+                .and_then(|l| l.split_once(':'))
+                .map(|(_, v)| v)
+            {
+                let has = |name: &str| feat_line.split_whitespace().any(|f| f.eq_ignore_ascii_case(name));
+                if has("aes") {
+                    features |= ArmFeatures::AES;
+                }
+                if has("pmull") {
+                    features |= ArmFeatures::PMULL;
+                }
+                if has("sha2") {
+                    features |= ArmFeatures::SHA2;
+                }
+                if has("crc32") {
+                    features |= ArmFeatures::CRC32;
+                }
+                if has("atomics") {
+                    features |= ArmFeatures::ATOMICS;
+                }
             }
-            probe!("aes", ArmFeatures::AES);
-            probe!("pmull", ArmFeatures::PMULL);
-            probe!("sha2", ArmFeatures::SHA2);
-            probe!("crc", ArmFeatures::CRC32);
-            probe!("lse", ArmFeatures::ATOMICS);
         }
     }
 
@@ -101,6 +117,63 @@ mod apple_silicon {
             CtlValue::Uint(u) => Some(u),
             CtlValue::Long(l) => Some(l as u32),
             CtlValue::Ulong(u) => Some(u as u32),
+            _ => None,
+        }
+    }
+
+    /// Read a sysctl key as a `u64` for cache sizes (bytes).
+    #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+    fn sysctl_u64(name: &str) -> Option<u64> {
+        use sysctl::{Ctl, CtlValue, Sysctl};
+        let ctl = Ctl::new(name).ok()?;
+        match ctl.value().ok()? {
+            CtlValue::Int(i) => Some(i as u64),
+            CtlValue::Uint(u) => Some(u64::from(u)),
+            CtlValue::Long(l) => Some(l as u64),
+            CtlValue::Ulong(u) | CtlValue::U64(u) => Some(u),
+            CtlValue::S64(s) => Some(s as u64),
+            _ => None,
+        }
+    }
+
+    /// Read cache sizes from macOS sysctl.
+    ///
+    /// Returns `[L1i, L1d, L2, L3]` in KB. Uses P-core (perflevel0) values
+    /// since those are the primary/larger caches.
+    fn detect_cache_sizes() -> [Option<u32>; 4] {
+        let bytes_to_kb = |bytes: u64| -> u32 {
+            #[allow(clippy::cast_possible_truncation)]
+            let kb = (bytes / 1024) as u32;
+            kb
+        };
+
+        [
+            sysctl_u64("hw.perflevel0.l1icachesize").map(bytes_to_kb),
+            sysctl_u64("hw.perflevel0.l1dcachesize").map(bytes_to_kb),
+            sysctl_u64("hw.perflevel0.l2cachesize").map(bytes_to_kb),
+            // macOS doesn't expose L3 via perflevel sysctl; it may not exist
+            // as a distinct level on Apple Silicon (the SLC is not reported here).
+            None,
+        ]
+    }
+
+    /// Known maximum P-core frequencies (MHz) for Apple Silicon chips.
+    ///
+    /// Apple does not expose CPU frequency via sysctl on Apple Silicon.
+    /// These values come from official Apple specs and Geekbench/AnandTech measurements.
+    fn lookup_frequency(generation: &str, variant: &str) -> Option<f64> {
+        match (generation, variant) {
+            // M1 family — all share the same Firestorm P-core at 3228 MHz
+            ("M1", _) => Some(3228.0),
+            // M2 family
+            ("M2", " Max" | " Ultra") => Some(3680.0),
+            ("M2", _) => Some(3490.0),
+            // M3 family
+            ("M3", _) => Some(4056.0),
+            // M4 family
+            ("M4", " Max") => Some(4608.0),
+            ("M4", " Pro") => Some(4512.0),
+            ("M4", _) => Some(4408.0),
             _ => None,
         }
     }
@@ -186,6 +259,26 @@ mod apple_silicon {
         let logical_cores = u32::try_from(num_cpus::get()).unwrap_or(0);
 
         let features = detect_arm_features();
+        let cache_sizes = detect_cache_sizes();
+
+        // Apple Silicon frequency from lookup table (not available via sysctl)
+        let max_freq = lookup_frequency(generation, variant);
+        let frequency = Frequency {
+            base: None,
+            max: max_freq,
+            current: None,
+        };
+
+        // Peak FLOPS: NEON is 128-bit = 2 DP ops/cycle.
+        // Apple Silicon has FMA so multiply-add counts as 2 FLOP/cycle.
+        // Use P-core count and max frequency for peak calculation.
+        let peak_flops = max_freq.map(|mhz| {
+            let clock_ghz = mhz / 1000.0;
+            let cores = f64::from(p_cores);
+            let neon_dp_width = 2.0; // 128-bit NEON = 2 doubles
+            let fma_factor = 2.0; // Apple Silicon always has FMA
+            cores * clock_ghz * neon_dp_width * fma_factor
+        });
 
         Some(CpuInfo {
             vendor: Vendor::Apple,
@@ -197,12 +290,14 @@ mod apple_silicon {
             },
             physical_cores,
             logical_cores,
-            frequency: Frequency::default(),
-            cache_sizes: [None; 4],
+            frequency,
+            cache_sizes,
             features,
             microarch: Some(microarch),
             hypervisor: None,
-            peak_flops: None,
+            peak_flops,
+            p_cores: Some(p_cores),
+            e_cores: Some(e_cores),
         })
     }
 
