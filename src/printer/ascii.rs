@@ -20,6 +20,7 @@ pub fn max_width(ascii_art: &str) -> usize {
 /// aligns consistently.  Returns a string where every line has the same
 /// visual width: `content_max_width + 2 * padding + 2` (two border chars).
 #[cfg(feature = "display")]
+#[allow(dead_code)]
 pub fn frame(ascii_art: &str, padding: usize) -> String {
     let lines: Vec<&str> = ascii_art.lines().collect();
     // Visual width of the widest content line (ASCII-only logos, so len == chars)

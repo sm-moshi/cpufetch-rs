@@ -24,13 +24,10 @@ fn test_full_pipeline_no_panic() {
         use cpufetch_rs::printer::print_cpu_info;
 
         let args = Args {
-            frequency: false,
             cache: true,
-            features: false,
-            json: false,
             no_logo: true, // avoid ASCII art in test output
             no_color: true,
-            debug: false,
+            ..Args::default()
         };
 
         // Should not panic

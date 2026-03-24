@@ -206,16 +206,44 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
         return Ok(());
     }
 
-    // Build the framed logo (uncoloured) to determine visual width
-    let raw_logo = logo::get_raw_logo(&cpu_info.vendor);
-    let raw_framed = ascii::frame(raw_logo, 1);
+    // Determine logo size: auto-detect from terminal width, or use CLI override
+    let logo_size = if args.logo_short {
+        logo::LogoSize::Short
+    } else if args.logo_long {
+        logo::LogoSize::Long
+    } else {
+        // Auto-detect: try LONG first, fall back to SHORT if terminal is too narrow
+        let term_width = crossterm::terminal::size().map_or(80, |(w, _)| u32::from(w));
+        let long_logo = logo::get_raw_logo(&cpu_info.vendor, logo::LogoSize::Long);
+        let long_width = long_logo.lines().map(visible_width).max().unwrap_or(0);
+        #[allow(clippy::cast_possible_truncation)]
+        let needed = (long_width + LOGO_INFO_GAP + LABEL_WIDTH + 40) as u32;
+        if term_width >= needed {
+            logo::LogoSize::Long
+        } else {
+            logo::LogoSize::Short
+        }
+    };
 
-    // Visual width = chars on the first frame line (all lines are equal-width)
-    let logo_visual_width = raw_framed.lines().next().map_or(0, |l| l.chars().count());
+    let raw_logo = logo::get_raw_logo(&cpu_info.vendor, logo_size);
+    let logo_colors = logo::get_logo_colors(&cpu_info.vendor);
 
-    // Colourize each frame line individually to avoid ANSI code fragmentation
-    let color_name = logo::get_logo_color_name(&cpu_info.vendor);
-    let logo_lines: Vec<String> = raw_framed.lines().map(|l| logo::colorize_line(l, color_name)).collect();
+    // Compute visual width from the raw logo (before adding colour codes)
+    let logo_visual_width = raw_logo.lines().map(visible_width).max().unwrap_or(0);
+
+    // Colourize each logo line and pad to uniform visual width
+    let logo_lines: Vec<String> = raw_logo
+        .lines()
+        .map(|l| {
+            let vis_w = visible_width(l);
+            let pad = logo_visual_width.saturating_sub(vis_w);
+            if args.no_color {
+                format!("{}{}", strip_color_markers(l), " ".repeat(pad))
+            } else {
+                format!("{}{}", logo::colorize_logo_line(l, &logo_colors), " ".repeat(pad))
+            }
+        })
+        .collect();
 
     // Print side-by-side: logo on the left, info on the right
     let max_rows = logo_lines.len().max(info_lines.len());
@@ -224,9 +252,9 @@ pub fn print_cpu_info(cpu_info: &CpuInfo, args: &Args) -> anyhow::Result<()> {
     for i in 0..max_rows {
         let right = info_lines.get(i).map_or("", String::as_str);
         if let Some(left) = logo_lines.get(i) {
-            println!("{}{}{}", left, " ".repeat(LOGO_INFO_GAP), right);
+            println!("{left}{}{right}", " ".repeat(LOGO_INFO_GAP));
         } else {
-            println!("{}{}{}", blank_left, " ".repeat(LOGO_INFO_GAP), right);
+            println!("{blank_left}{}{right}", " ".repeat(LOGO_INFO_GAP));
         }
     }
 
@@ -249,4 +277,55 @@ pub fn print_json(cpu_info: &CpuInfo) -> anyhow::Result<()> {
 #[cfg(all(feature = "display", not(feature = "json")))]
 pub fn print_json(_cpu_info: &CpuInfo) -> anyhow::Result<()> {
     Err(anyhow::anyhow!("JSON feature not enabled"))
+}
+
+/// Compute the visible width of a logo line (excluding `$C1`–`$C4` and `$CR` markers).
+#[cfg(feature = "display")]
+fn visible_width(line: &str) -> usize {
+    let mut width = 0;
+    let mut chars = line.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch == '$' {
+            match chars.peek() {
+                Some('C') => {
+                    chars.next(); // consume 'C'
+                    if let Some('R' | '1'..='4') = chars.peek() {
+                        chars.next();
+                    } else {
+                        width += 2; // '$' + 'C' are visible
+                    }
+                },
+                _ => width += 1,
+            }
+        } else {
+            width += 1;
+        }
+    }
+    width
+}
+
+/// Strip colour markers from a logo line, returning plain text.
+#[cfg(feature = "display")]
+fn strip_color_markers(line: &str) -> String {
+    let mut result = String::with_capacity(line.len());
+    let mut chars = line.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch == '$' {
+            match chars.peek() {
+                Some('C') => {
+                    chars.next();
+                    if let Some('R' | '1'..='4') = chars.peek() {
+                        chars.next();
+                    } else {
+                        result.push('$');
+                        result.push('C');
+                    }
+                },
+                _ => result.push('$'),
+            }
+        } else {
+            result.push(ch);
+        }
+    }
+    result
 }

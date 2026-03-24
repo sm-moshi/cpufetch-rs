@@ -83,10 +83,7 @@ mod printer_tests {
             frequency: true,
             cache: true,
             features: true,
-            json: false,
-            no_logo: false,
-            no_color: false,
-            debug: false,
+            ..Args::default()
         }
     }
 

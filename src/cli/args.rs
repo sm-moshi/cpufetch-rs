@@ -24,9 +24,21 @@ pub struct Args {
     #[clap(long)]
     pub no_logo: bool,
 
-    /// Don't use color in the output
+    /// Don't use colour in the output
     #[clap(long)]
     pub no_color: bool,
+
+    /// Force the short (compact) logo variant
+    #[clap(long, conflicts_with = "logo_long")]
+    pub logo_short: bool,
+
+    /// Force the long (detailed) logo variant
+    #[clap(long, conflicts_with = "logo_short")]
+    pub logo_long: bool,
+
+    /// Output style: default (no frame), fancy (box border), retro (ASCII border)
+    #[clap(short, long, value_parser = ["default", "fancy", "retro"])]
+    pub style: Option<String>,
 
     /// Show debug information
     #[clap(long)]
