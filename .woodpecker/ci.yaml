@@ -14,10 +14,6 @@ steps:
       - cargo +nightly fmt --all --check
     volumes:
       - woodpecker-pipeline-cache:/woodpecker/cache
-    backend_options:
-      kubernetes:
-        securityContext:
-          fsGroupChangePolicy: OnRootMismatch
 
   - name: clippy
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
@@ -28,10 +24,6 @@ steps:
       - cargo clippy --all-targets --all-features
     volumes:
       - woodpecker-pipeline-cache:/woodpecker/cache
-    backend_options:
-      kubernetes:
-        securityContext:
-          fsGroupChangePolicy: OnRootMismatch
 
   - name: test
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
@@ -41,10 +33,6 @@ steps:
       - cargo test --all-features
     volumes:
       - woodpecker-pipeline-cache:/woodpecker/cache
-    backend_options:
-      kubernetes:
-        securityContext:
-          fsGroupChangePolicy: OnRootMismatch
 
   - name: docs
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
@@ -55,10 +43,6 @@ steps:
       - cargo doc --no-deps --document-private-items --all-features
     volumes:
       - woodpecker-pipeline-cache:/woodpecker/cache
-    backend_options:
-      kubernetes:
-        securityContext:
-          fsGroupChangePolicy: OnRootMismatch
 
   - name: audit
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
@@ -68,10 +52,6 @@ steps:
       - cargo audit
     volumes:
       - woodpecker-pipeline-cache:/woodpecker/cache
-    backend_options:
-      kubernetes:
-        securityContext:
-          fsGroupChangePolicy: OnRootMismatch
 
   - name: deny
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
@@ -81,7 +61,3 @@ steps:
       - cargo deny check
     volumes:
       - woodpecker-pipeline-cache:/woodpecker/cache
-    backend_options:
-      kubernetes:
-        securityContext:
-          fsGroupChangePolicy: OnRootMismatch
