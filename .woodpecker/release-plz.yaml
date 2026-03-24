@@ -12,6 +12,7 @@ steps:
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /home/ci/.rustup
       GITHUB_TOKEN:
         from_secret: github_token
     commands:

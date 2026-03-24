@@ -10,7 +10,7 @@ steps:
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
+      RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo +nightly fmt --all --check
     volumes:
@@ -20,7 +20,7 @@ steps:
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
+      RUSTUP_HOME: /home/ci/.rustup
       RUSTFLAGS: -D warnings
     commands:
       - cargo clippy --all-targets --all-features
@@ -31,7 +31,7 @@ steps:
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
+      RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo test --all-features
     volumes:
@@ -41,7 +41,7 @@ steps:
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
+      RUSTUP_HOME: /home/ci/.rustup
       RUSTDOCFLAGS: -D warnings
     commands:
       - cargo doc --no-deps --document-private-items --all-features
@@ -52,7 +52,7 @@ steps:
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
+      RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo audit
     volumes:
@@ -62,7 +62,7 @@ steps:
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
-      RUSTUP_HOME: /woodpecker/cache/cpufetch-rs/rustup
+      RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo deny check
     volumes:

@@ -17,6 +17,7 @@ steps:
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo build --release --locked
       - mkdir -p dist
@@ -30,6 +31,7 @@ steps:
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo build --release --locked --target aarch64-unknown-linux-gnu
       - cp target/aarch64-unknown-linux-gnu/release/cpufetch dist/cpufetch-linux-aarch64
@@ -42,6 +44,7 @@ steps:
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
       CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
+      RUSTUP_HOME: /home/ci/.rustup
       CARGO_REGISTRY_TOKEN:
         from_secret: cargo_registry_token
     commands:
