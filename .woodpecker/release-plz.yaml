@@ -19,6 +19,7 @@ steps:
       - mkdir -p ./bin
       - tar xzf /tmp/rp.tar.gz -C ./bin
       - chmod +x ./bin/release-plz
+      - git config --global --add safe.directory "$CI_WORKSPACE"
       - git config --global user.email "ci@m0sh1.cc"
       - git config --global user.name "Woodpecker CI"
       - git remote set-url origin "https://$GITHUB_TOKEN@github.com/sm-moshi/cpufetch-rs.git"
