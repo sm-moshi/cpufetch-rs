@@ -51,19 +51,13 @@ steps:
   - name: audit
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
-      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo audit
-    volumes:
-      - woodpecker-pipeline-cache:/woodpecker/cache
 
   - name: deny
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
-      CARGO_HOME: /woodpecker/cache/cpufetch-rs/cargo
       RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo deny check
-    volumes:
-      - woodpecker-pipeline-cache:/woodpecker/cache
