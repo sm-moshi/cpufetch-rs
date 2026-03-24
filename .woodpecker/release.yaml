@@ -34,6 +34,7 @@ steps:
       RUSTUP_HOME: /home/ci/.rustup
       CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
     commands:
+      - rustup target add aarch64-unknown-linux-gnu
       - cargo build --release --locked --target aarch64-unknown-linux-gnu
       - cp target/aarch64-unknown-linux-gnu/release/cpufetch dist/cpufetch-linux-aarch64
       - tar czvf "dist/cpufetch-$CI_COMMIT_TAG-linux-aarch64.tar.gz" -C dist cpufetch-linux-aarch64
