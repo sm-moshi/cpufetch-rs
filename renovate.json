@@ -2,7 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:best-practices",
-    ":preserveSemverRanges"
+    ":preserveSemverRanges",
+    "local>sm-moshi/infra//.github/renovate/base"
   ],
   "enabledManagers": [
     "cargo",
@@ -13,36 +14,36 @@
   "lockFileMaintenance": {
     "enabled": true,
     "groupName": "lock file maintenance",
-    "schedule": ["before 6am on monday"]
+    "schedule": [ "before 6am on monday" ]
   },
   "packageRules": [
     {
       "description": "Auto-merge patch updates",
-      "matchUpdateTypes": ["patch"],
+      "matchUpdateTypes": [ "patch" ],
       "automerge": true
     },
     {
       "description": "Auto-merge minor updates for dev-dependencies",
-      "matchDepTypes": ["dev-dependencies"],
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchDepTypes": [ "dev-dependencies" ],
+      "matchUpdateTypes": [ "minor", "patch" ],
       "automerge": true
     },
     {
       "description": "Group all GitHub Actions updates",
-      "matchManagers": ["github-actions"],
+      "matchManagers": [ "github-actions" ],
       "groupName": "GitHub Actions",
-      "addLabels": ["ci"],
-      "automerge": true
+      "addLabels": [ "ci" ],
+      "automerge": false
     },
     {
       "description": "Group mise tool updates",
-      "matchManagers": ["mise"],
+      "matchManagers": [ "mise" ],
       "groupName": "mise tools",
       "automerge": true
     },
     {
-      "matchManagers": ["cargo"],
-      "addLabels": ["rust"]
+      "matchManagers": [ "cargo" ],
+      "addLabels": [ "rust" ]
     }
   ]
 }
