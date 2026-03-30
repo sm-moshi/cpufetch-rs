@@ -23,4 +23,5 @@ steps:
       - git config --global user.email "ci@m0sh1.cc"
       - git config --global user.name "Woodpecker CI"
       - git remote set-url origin "https://$GITHUB_TOKEN@github.com/sm-moshi/cpufetch-rs.git"
-      - ./bin/release-plz release --git-token "$GITHUB_TOKEN"
+      - |
+        ./bin/release-plz release --git-token "$GITHUB_TOKEN" || echo "release-plz: no new release needed (tag may already exist)"
