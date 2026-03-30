@@ -26,9 +26,10 @@ target/
 
 # Local files
 memory-bank/
-.cursor/
 cpufetch-rs.code-workspace
-.cursorignore
+
+# CI release build artifacts
+dist/
 
 # Upstream C library — used locally only, not tracked in repo
 cpufetch-c/
