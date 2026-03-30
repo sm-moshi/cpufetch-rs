@@ -51,6 +51,7 @@ steps:
   - name: audit
     image: harbor.m0sh1.cc/apps/rust-ci:debian-latest
     environment:
+      CARGO_HOME: /tmp/cargo
       RUSTUP_HOME: /home/ci/.rustup
     commands:
       - cargo audit
