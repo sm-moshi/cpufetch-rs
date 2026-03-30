@@ -5,6 +5,7 @@
     ":preserveSemverRanges",
     "local>sm-moshi/infra//.github/renovate/base"
   ],
+  "pinDigests": false,
   "enabledManagers": [
     "cargo",
     "github-actions",
