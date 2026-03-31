@@ -1,11 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
+    "github>sm-moshi/infra//.github/renovate/base.json",
     "config:best-practices",
-    ":preserveSemverRanges",
-    "local>sm-moshi/infra//.github/renovate/base"
+    ":preserveSemverRanges"
   ],
-  "pinDigests": false,
   "enabledManagers": [
     "cargo",
     "github-actions",
