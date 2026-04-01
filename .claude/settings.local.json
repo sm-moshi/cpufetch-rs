@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__MCP_DOCKER__read_file",
+      "mcp__basic-memory__delete_note",
+      "mcp__woodpecker-mcp__search_repository",
+      "Bash(helm dep:*)",
+      "mcp__argocd-mcp__get_application",
+      "Bash(argocd app:*)",
+      "mcp__MCP_DOCKER__list_directory",
+      "mcp__MCP_DOCKER__get_file_info",
+      "mcp__MCP_DOCKER__start_process",
+      "WebFetch(domain:ci.m0sh1.cc)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7"
+  ]
+}
