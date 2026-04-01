@@ -1,0 +1,40 @@
+name: Claude Renovate Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+
+jobs:
+  claude-renovate-review:
+    if: github.event.pull_request.user.login == 'renovate[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: koki-develop/claude-renovate-review@v1
+        id: review
+        with:
+          claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+      - name: Check safety assessment
+        env:
+          SAFETY: ${{ steps.review.outputs.safety-assessment }}
+        run: echo "Safety Assessment - $SAFETY"
+
+      - name: Auto-approve if safe
+        if: steps.review.outputs.safety-assessment == 'safe'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr review "$PR_NUMBER" --approve
+
+      - name: Auto-merge if safe
+        if: steps.review.outputs.safety-assessment == 'safe'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr merge "$PR_NUMBER" --squash --auto
