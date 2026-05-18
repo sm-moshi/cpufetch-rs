@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>sm-moshi/infra//.github/renovate/base.json",
+    "github>yaelmoshi/infra//.github/renovate/base.json",
     "config:best-practices",
     ":preserveSemverRanges"
   ],

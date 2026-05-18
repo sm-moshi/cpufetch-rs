@@ -8,7 +8,7 @@ wish to make by creating a new issue before making the change.
 ## Reporting issues
 
 Before reporting an issue on the
-[issue tracker](https://github.com/sm-moshi/cpufetch-rs/issues),
+[issue tracker](https://github.com/yaelmoshi/cpufetch-rs/issues),
 please check that it has not already been reported by searching for related keywords.
 
 ## Pull requests
@@ -33,7 +33,7 @@ Examples:
 ## Setting up the development environment
 
 ```bash
-git clone https://github.com/sm-moshi/cpufetch-rs
+git clone https://github.com/yaelmoshi/cpufetch-rs
 cd cpufetch-rs
 
 # Install dev tools (cargo-nextest, cargo-audit, cargo-deny, etc.)

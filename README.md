@@ -1,7 +1,7 @@
 # cpufetch-rs
 
-[![CI](https://github.com/sm-moshi/cpufetch-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/sm-moshi/cpufetch-rs/actions/workflows/ci.yml)
-[![Security](https://github.com/sm-moshi/cpufetch-rs/actions/workflows/security.yml/badge.svg)](https://github.com/sm-moshi/cpufetch-rs/actions/workflows/security.yml)
+[![CI](https://github.com/yaelmoshi/cpufetch-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/yaelmoshi/cpufetch-rs/actions/workflows/ci.yml)
+[![Security](https://github.com/yaelmoshi/cpufetch-rs/actions/workflows/security.yml/badge.svg)](https://github.com/yaelmoshi/cpufetch-rs/actions/workflows/security.yml)
 [![crates.io](https://img.shields.io/crates/v/cpufetch-rs.svg)](https://crates.io/crates/cpufetch-rs)
 [![docs.rs](https://docs.rs/cpufetch-rs/badge.svg)](https://docs.rs/cpufetch-rs)
 [![MSRV](https://img.shields.io/badge/MSRV-1.85-blue.svg)](Cargo.toml)
@@ -39,12 +39,12 @@ From [crates.io](https://crates.io/crates/cpufetch-rs):
 cargo install cpufetch-rs
 ```
 
-Or download a pre-built binary from [GitHub Releases](https://github.com/sm-moshi/cpufetch-rs/releases).
+Or download a pre-built binary from [GitHub Releases](https://github.com/yaelmoshi/cpufetch-rs/releases).
 
 ## Build from source
 
 ```bash
-git clone https://github.com/sm-moshi/cpufetch-rs
+git clone https://github.com/yaelmoshi/cpufetch-rs
 cd cpufetch-rs
 cargo build --release
 ./target/release/cpufetch
